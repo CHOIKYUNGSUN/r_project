@@ -1,0 +1,2047 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>R 타이핑 실습실</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Nanum+Gothic+Coding:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EDF3F1;
+    --surface: #FFFFFF;
+    --surface-soft: #F5F8F7;
+    --ink: #12211F;
+    --muted: #52706C;
+    --border: #D6E3DF;
+    --accent: #0E7C7B;
+    --accent-strong: #095F5E;
+    --accent-tint: #DCEEEC;
+    --good: #22884C;
+    --good-tint: #E0F3E6;
+    --bad: #C13F3F;
+    --bad-tint: #FBE6E6;
+    --console-bg: #0E1C1B;
+    --console-bg-alt: #102625;
+    --console-border: #1D3735;
+    --console-text: #E7F2EF;
+    --console-muted: #7FA39C;
+    --console-dot1: #E5675A;
+    --console-dot2: #E8B84B;
+    --console-dot3: #4FB286;
+    --shadow: 0 1px 2px rgba(18,33,31,0.06), 0 8px 24px -12px rgba(18,33,31,0.18);
+    --font-head: 'IBM Plex Sans KR', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'IBM Plex Sans KR', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-code: 'Nanum Gothic Coding', 'D2Coding', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0A1413;
+      --surface: #11201E;
+      --surface-soft: #0E1B19;
+      --ink: #E7F2EF;
+      --muted: #93B0AA;
+      --border: #21403C;
+      --accent: #3FBDB4;
+      --accent-strong: #63D2C9;
+      --accent-tint: #16302D;
+      --good: #4FCB84;
+      --good-tint: #133024;
+      --bad: #FF7A7A;
+      --bad-tint: #341717;
+      --console-bg: #060E0D;
+      --console-bg-alt: #08130F;
+      --console-border: #1B2E2B;
+      --console-text: #E7F2EF;
+      --console-muted: #6E948C;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0A1413;
+    --surface: #11201E;
+    --surface-soft: #0E1B19;
+    --ink: #E7F2EF;
+    --muted: #93B0AA;
+    --border: #21403C;
+    --accent: #3FBDB4;
+    --accent-strong: #63D2C9;
+    --accent-tint: #16302D;
+    --good: #4FCB84;
+    --good-tint: #133024;
+    --bad: #FF7A7A;
+    --bad-tint: #341717;
+    --console-bg: #060E0D;
+    --console-bg-alt: #08130F;
+    --console-border: #1B2E2B;
+    --console-text: #E7F2EF;
+    --console-muted: #6E948C;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.55;
+  }
+  h1, h2, h3 { font-family: var(--font-head); text-wrap: balance; margin: 0; }
+  button { font-family: var(--font-body); }
+  ::selection { background: var(--accent-tint); }
+
+  .page-wrap {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding-inline: 20px;
+    padding-block: 20px 56px;
+  }
+
+  /* ---------- Top bar ---------- */
+  .top-bar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 20;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(8px);
+    margin-inline: -20px;
+    padding-inline: 20px;
+    padding-block: 14px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .top-inner {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .brand-eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .brand-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+  .brand-sub {
+    font-size: 13.5px;
+    color: var(--muted);
+    margin-top: 4px;
+    max-width: 60ch;
+  }
+  .progress-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    box-shadow: var(--shadow);
+    white-space: nowrap;
+  }
+  .progress-pill .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent);
+  }
+  .progress-pill b { color: var(--accent); font-variant-numeric: tabular-nums; }
+
+  /* ---------- Admin login ---------- */
+  .admin-toggle-btn {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 12.5px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .admin-toggle-btn:hover { border-color: var(--accent); color: var(--ink); }
+  .admin-toggle-btn.on {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+  }
+  .admin-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 20, 19, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 60;
+  }
+  .admin-overlay[hidden] { display: none; }
+  .admin-modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    padding: 22px 24px;
+    width: 100%;
+    max-width: 340px;
+  }
+  .admin-modal h3 {
+    font-family: var(--font-head);
+    font-size: 16px;
+    margin: 0;
+  }
+  .admin-modal-sub {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin: 8px 0 16px;
+    line-height: 1.5;
+  }
+  .admin-modal label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-top: 10px;
+  }
+  .admin-modal input {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    padding: 9px 11px;
+    font-size: 13.5px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+  }
+  .admin-modal input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  .admin-modal-error {
+    min-height: 1.3em;
+    font-size: 12px;
+    color: var(--bad);
+    margin-top: 8px;
+  }
+  .admin-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  /* ---------- Instructions ---------- */
+  .howto {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .howto li {
+    list-style: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .howto li b {
+    display: block;
+    font-family: var(--font-head);
+    color: var(--ink);
+    font-size: 13.5px;
+    margin-bottom: 2px;
+  }
+  .howto li .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--accent-tint);
+    color: var(--accent-strong);
+    font-size: 11px;
+    font-weight: 700;
+    margin-right: 6px;
+  }
+
+  /* ---------- Chapter switch ---------- */
+  .chapter-switch {
+    display: flex;
+    gap: 6px;
+    margin-top: 16px;
+    padding: 4px;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: fit-content;
+  }
+  .chapter-btn {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 13.5px;
+    padding: 9px 20px;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease;
+  }
+  .chapter-btn:hover { color: var(--ink); }
+  .chapter-btn.active {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  @media (max-width: 460px) {
+    .chapter-switch { width: 100%; }
+    .chapter-btn { flex: 1 1 0; padding: 9px 10px; }
+  }
+
+  /* ---------- Tabs ---------- */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-top: 22px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .tab-btn {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 13.5px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .tab-btn:hover { border-color: var(--accent); color: var(--ink); }
+  .tab-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+  }
+  .tab-btn .tab-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--good);
+    color: #fff;
+    font-size: 10px;
+    line-height: 1;
+  }
+  .tab-btn:focus-visible, button:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* ---------- Exercise ---------- */
+  .exercise { margin-top: 22px; }
+  .ex-head {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+  }
+  .ex-badge {
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--accent-strong);
+    background: var(--accent-tint);
+    padding: 4px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+  }
+  .ex-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-top: 10px;
+  }
+  .ex-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 22px;
+    margin-top: 12px;
+  }
+  .ex-meta div { font-size: 13.5px; }
+  .ex-meta dt {
+    display: inline;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .ex-meta dt::after { content: " · "; color: var(--border); }
+  .ex-meta dd { display: inline; margin: 0; color: var(--ink); }
+  .ex-desc {
+    margin-top: 12px;
+    font-size: 13.5px;
+    color: var(--muted);
+    max-width: 74ch;
+  }
+
+  .code-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 16px;
+  }
+  @media (max-width: 760px) {
+    .code-grid { grid-template-columns: 1fr; }
+    .howto { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 460px) {
+    .howto { grid-template-columns: 1fr; }
+  }
+
+  .code-card {
+    background: var(--console-bg);
+    border: 1px solid var(--console-border);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow);
+  }
+  .code-card.typing { background: var(--console-bg-alt); }
+  .card-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--console-border);
+    flex-shrink: 0;
+  }
+  .traffic { display: flex; gap: 5px; }
+  .traffic span { width: 9px; height: 9px; border-radius: 50%; display: block; }
+  .traffic span:nth-child(1) { background: var(--console-dot1); }
+  .traffic span:nth-child(2) { background: var(--console-dot2); }
+  .traffic span:nth-child(3) { background: var(--console-dot3); }
+  .card-filename {
+    font-family: var(--font-code);
+    font-size: 12px;
+    color: var(--console-muted);
+  }
+  .card-tag {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--console-muted);
+    text-transform: uppercase;
+  }
+
+  .admin-only { display: none; }
+  body.is-admin .admin-only { display: inline-flex; }
+
+  .source-copy-btn {
+    margin-left: 10px;
+    flex: 0 0 auto;
+    align-items: center;
+    border: 1px solid var(--console-border);
+    background: rgba(255,255,255,0.06);
+    color: var(--console-text);
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background .12s ease, border-color .12s ease;
+  }
+  .source-copy-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .source-copy-btn.copied { background: var(--accent-strong); border-color: var(--accent-strong); color: #fff; }
+
+  .char-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--console-border);
+    background: rgba(255,255,255,0.03);
+  }
+  .char-toolbar .ct-label {
+    font-size: 11.5px;
+    color: var(--console-muted);
+    flex: 0 0 auto;
+  }
+  .char-btn {
+    flex: 0 0 auto;
+    min-width: 30px;
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 7px;
+    border: 1px solid var(--console-border);
+    background: rgba(255,255,255,0.05);
+    color: var(--console-text);
+    font-family: var(--font-code);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .12s ease, border-color .12s ease;
+  }
+  .char-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .char-toolbar .ct-tip {
+    flex: 1 1 220px;
+    font-size: 11px;
+    color: var(--console-muted);
+    text-align: right;
+  }
+  @media (max-width: 520px) {
+    .char-toolbar .ct-tip { text-align: left; flex-basis: 100%; }
+  }
+  .status-pill {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    color: var(--console-muted);
+  }
+  .status-pill.ok { color: var(--good); background: color-mix(in srgb, var(--good) 18%, transparent); }
+  .status-pill.err { color: var(--bad); background: color-mix(in srgb, var(--bad) 18%, transparent); }
+
+  .card-body { position: relative; flex: 0 0 auto; }
+
+  pre.src-code {
+    margin: 0;
+    height: 100%;
+    overflow: auto;
+    padding: 14px 16px;
+    font-family: var(--font-code);
+    font-size: 13.5px;
+    line-height: 1.65;
+    white-space: pre;
+    color: var(--console-text);
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body.is-admin pre.src-code {
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
+  }
+  pre.src-code .tok-com { color: #7FA39C; font-style: italic; }
+  pre.src-code .tok-str { color: #E8B84B; }
+  pre.src-code .tok-num { color: #6FB7E8; }
+  pre.src-code .tok-fn  { color: #8AD6C9; }
+  pre.src-code .tok-op  { color: #E8875A; }
+  pre.src-code .tok-kw  { color: #C79CE8; font-weight: 700; }
+
+  .type-wrap { position: relative; height: 100%; }
+  .type-highlight, .type-input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 14px 16px;
+    font-family: var(--font-code);
+    font-size: 13.5px;
+    line-height: 1.65;
+    white-space: pre;
+    border: none;
+    background: transparent;
+  }
+  .type-highlight {
+    color: var(--console-text);
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .type-highlight .ok { color: var(--good); }
+  .type-highlight .bad { color: #ffffff; background: var(--bad); border-radius: 2px; }
+  .type-input {
+    width: 100%;
+    height: 100%;
+    resize: none;
+    overflow: auto;
+    color: transparent;
+    caret-color: var(--console-text);
+  }
+  .type-input::placeholder { color: var(--console-muted); }
+
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .progress-track {
+    flex: 1 1 220px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    min-width: 140px;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    transition: width .12s ease, background .15s ease;
+  }
+  .progress-fill.err { background: var(--bad); }
+  .progress-fill.ok { background: var(--good); }
+  .progress-text {
+    font-size: 12.5px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    min-width: 15ch;
+  }
+  .btn-group { display: flex; gap: 8px; margin-left: auto; }
+  .btn {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 13px;
+    padding: 9px 15px;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s, color .15s, opacity .15s;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn-copy {
+    background: var(--border);
+    color: var(--muted);
+    border-color: var(--border);
+    cursor: not-allowed;
+  }
+  .btn-copy.enabled {
+    background: var(--good);
+    border-color: var(--good);
+    color: #ffffff;
+    cursor: pointer;
+  }
+  .btn-copy.enabled:hover { filter: brightness(1.05); }
+  .btn-copy.copied { background: var(--accent-strong); border-color: var(--accent-strong); }
+
+  .hint-line {
+    font-size: 12.5px;
+    color: var(--bad);
+    margin-top: 8px;
+    min-height: 1.4em;
+  }
+
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-top: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .result-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-soft);
+  }
+  .result-head b { font-size: 13.5px; font-family: var(--font-head); }
+  .result-head span { font-size: 12px; color: var(--muted); }
+  pre.output-code {
+    margin: 0;
+    padding: 14px 16px;
+    font-family: var(--font-code);
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--console-text);
+    background: var(--console-bg);
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .result-note {
+    padding: 12px 16px;
+    font-size: 12.5px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+  }
+  .result-plot {
+    padding: 16px;
+    background: #ffffff;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+  .result-plot img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .result-plot .plot-caption {
+    margin-top: 8px;
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+  .explain-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-top: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .explain-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-soft);
+  }
+  .explain-head b { font-size: 13.5px; font-family: var(--font-head); }
+  .explain-head span { font-size: 12px; color: var(--muted); }
+  .explain-body { padding: 4px 16px 14px; }
+  .explain-body p {
+    margin: 10px 0;
+    font-size: 13.5px;
+    color: var(--ink);
+    line-height: 1.65;
+  }
+  .design-table-wrap {
+    margin-top: 14px;
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  table.design-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.8px;
+    background: var(--surface);
+  }
+  table.design-table th, table.design-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 9px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  table.design-table th {
+    background: var(--accent-tint);
+    color: var(--accent-strong);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  table.design-table td:first-child {
+    font-weight: 700;
+    color: var(--accent-strong);
+    white-space: nowrap;
+  }
+  table.design-table tr:last-child td { border-bottom: none; }
+
+  /* 노트북 등 좁은 화면에서도 코드·결과가 가로 스크롤 없이 한 화면에 들어오도록 글자 크기를 단계적으로 축소 */
+  @media (max-width: 1560px) {
+    pre.src-code, .type-highlight, .type-input { font-size: 12.6px; }
+    pre.output-code { font-size: 11.8px; }
+  }
+  @media (max-width: 1340px) {
+    pre.src-code, .type-highlight, .type-input { font-size: 11.9px; }
+    pre.output-code { font-size: 11px; }
+  }
+  @media (max-width: 1180px) and (min-width: 761px) {
+    pre.src-code, .type-highlight, .type-input { font-size: 10.6px; }
+    pre.output-code { font-size: 9.6px; }
+  }
+  @media (max-width: 1060px) and (min-width: 761px) {
+    pre.src-code, .type-highlight, .type-input { font-size: 9.35px; }
+    pre.output-code { font-size: 8.7px; }
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%) translateY(12px);
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 999px;
+    box-shadow: var(--shadow);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease;
+    z-index: 50;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .page-footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 36px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <header class="top-bar">
+    <div class="top-inner">
+      <div>
+        <div class="brand-eyebrow" id="brandEyebrow">제1장 통합 R 실습 · 보건의료 데이터 분석</div>
+        <h1 class="brand-title">R 타이핑 실습실</h1>
+        <p class="brand-sub" id="brandSub">왼쪽 콘솔의 코드를 보고 오른쪽 입력창에 똑같이 입력해 보세요. 한 글자도 틀리지 않으면 복사 버튼이 켜집니다.</p>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button type="button" class="admin-toggle-btn" id="adminToggleBtn">관리자 로그인</button>
+        <div class="progress-pill"><span class="dot"></span>완료 <b id="progress-count">0</b> / <b id="progress-total">4</b></div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="chapter-switch" id="chapterSwitch"></nav>
+
+  <ul class="howto">
+    <li><b><span class="num">1</span>코드 확인</b>왼쪽 콘솔 창의 R 소스코드를 줄 단위로 읽어봅니다.</li>
+    <li><b><span class="num">2</span>따라 입력</b>글자와 기호만 입력하면 띄어쓰기·줄바꿈·들여쓰기는 자동으로 채워집니다.</li>
+    <li><b><span class="num">3</span>복사 활성화</b>전체가 초록색이 되면 복사 버튼이 켜집니다.</li>
+    <li><b><span class="num">4</span>실행·비교</b>RStudio에 붙여넣어 실행하고 아래 예상 결과와 맞춰봅니다.</li>
+  </ul>
+
+  <nav class="tabs" id="tabs"></nav>
+  <main id="app-main"></main>
+
+  <p class="page-footer">직접 타이핑하며 R 문법과 들여쓰기 감각을 익히는 실습용 페이지입니다.</p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="admin-overlay" id="adminOverlay" hidden>
+  <div class="admin-modal">
+    <h3>관리자 로그인</h3>
+    <p class="admin-modal-sub">로그인하면 입력 내용과 관계없이 모든 실습의 원본 소스를 복사할 수 있고, 입력창에 붙여넣기도 할 수 있습니다.</p>
+    <label for="adminUser">아이디</label>
+    <input type="text" id="adminUser" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+    <label for="adminPass">비밀번호</label>
+    <input type="password" id="adminPass" autocomplete="off">
+    <div class="admin-modal-error" id="adminError"></div>
+    <div class="admin-modal-actions">
+      <button type="button" class="btn" id="adminCancelBtn">취소</button>
+      <button type="button" class="btn btn-copy enabled" id="adminSubmitBtn">로그인</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var EXERCISES = [
+    {
+      id: "p1",
+      chapter: 1,
+      tab: "프로그램 1-1",
+      badge: "프로그램 1-1",
+      title: "업무 문제를 데이터 문제로 바꾸기",
+      filename: "program_1-1.R",
+      meta: [
+        ["현상", "외래 환자의 체감 대기시간이 길다"],
+        ["결정", "혼잡 시간대 접수 인력을 늘릴 것인가?"]
+      ],
+      desc: "analysis_card라는 tibble 하나에 업무 문제·의사결정·분석 단위·결과변수·비교 기준·품질 점검 항목을 정리하고, 세로형 표(analysis_card_long)로 다시 확인합니다.",
+      source: "# 최초 1회만 설치\ninstall.packages(\"tibble\")\n\n# R을 실행할 때마다 불러오기\nlibrary(tibble)\n\nanalysis_card <- tibble(\n  business_problem = \"외래 환자의 체감 대기시간이 길다\",\n  decision = \"혼잡 시간대에 접수 인력을 추가 배치할 것인가?\",\n  unit_of_analysis = \"환자 1회의 방문\",\n  outcome = \"wait_min\",\n  comparison = \"진료과·요일·시간대\",\n  quality_checks = \"결측, 음수, 중복 방문, 시간 기준\"\n)\n\nanalysis_card\n\nanalysis_card_long <- tibble::tibble(\n  name = names(analysis_card),\n  value = as.character(unlist(analysis_card[1, ]))\n)\n\nprint(analysis_card_long, width = Inf)",
+      output: "> print(analysis_card_long, width = Inf)\n# A tibble: 6 × 2\n  name              value                                          \n  <chr>             <chr>                                          \n1 business_problem  외래 환자의 체감 대기시간이 길다\n2 decision          혼잡 시간대에 접수 인력을 추가 배치할 것인가?\n3 unit_of_analysis  환자 1회의 방문\n4 outcome           wait_min\n5 comparison        진료과·요일·시간대\n6 quality_checks    결측, 음수, 중복 방문, 시간 기준",
+      note: null
+    },
+    {
+      id: "p2",
+      chapter: 1,
+      tab: "프로그램 1-2",
+      badge: "프로그램 1-2",
+      title: "최소 데이터 품질 진단",
+      filename: "program_1-2.R",
+      meta: [
+        ["단위", "환자 1회 방문"],
+        ["핵심 열", "patient_id, age, wait_min, charge, visit_date"]
+      ],
+      desc: "hospital 데이터를 만든 뒤 summarise()로 행 수·중복 환자번호·결측값·비정상 나이·음수 진료비·방문 기간을 한 번에 점검하는 quality_result를 만듭니다.",
+      source: "# dplyr 패키지가 설치되지 않은 경우 최초 1회만 실행\ninstall.packages(\"dplyr\")\n\n# dplyr 패키지 불러오기\nlibrary(dplyr)\n\n# 실습용 외래 방문 데이터 생성\nhospital <- tibble::tibble(\n  patient_id = c(\"P001\", \"P002\", \"P003\", \"P001\", \"P005\", \"P006\"),\n  wait_min = c(20, 35, NA, 45, 15, 30),\n  charge = c(30000, 45000, 50000, 35000, -1000, NA),\n  age = c(35, 67, 25, 35, 130, 42),\n  visit_date = c(\n    \"2026-01-05\",\n    \"2026-01-07\",\n    \"2026-01-10\",\n    \"2026-02-01\",\n    \"2026-02-03\",\n    \"2026-02-05\"\n  )\n)\n\n# 방문일을 문자형에서 날짜형으로 변환\nhospital$visit_date <- as.Date(hospital$visit_date)\n\n# 데이터 품질 검사 결과 생성\nquality_result <- hospital |>\n  summarise(\n    rows = n(),\n    duplicated_id = sum(duplicated(patient_id)),\n    missing_wait = sum(is.na(wait_min)),\n    missing_charge = sum(is.na(charge)),\n    impossible_age = sum(age < 0 | age > 120, na.rm = TRUE),\n    negative_charge = sum(charge < 0, na.rm = TRUE),\n    first_visit = min(visit_date, na.rm = TRUE),\n    last_visit = max(visit_date, na.rm = TRUE)\n  )\n\n# 품질 검사 결과 출력\nprint(quality_result, width = Inf)",
+      output: "# A tibble: 1 × 8\n   rows duplicated_id missing_wait missing_charge impossible_age\n  <int>         <int>        <int>          <int>          <int>\n1     6             1            1              1              1\n\n  negative_charge first_visit last_visit\n            <int> <date>      <date>\n1               1 2026-01-05  2026-02-05",
+      note: "RStudio 콘솔의 너비에 따라 결과가 한 줄 또는 여러 줄로 나뉘어 보일 수 있습니다. 화면 모양이 달라도 변수명과 값이 같으면 정상적으로 실행된 것입니다."
+    },
+    {
+      id: "m1",
+      chapter: 1,
+      tab: "미니실습 1-1",
+      badge: "미니실습 1-1",
+      title: "병상 운영, 측정 가능한 질문으로 바꾸기",
+      filename: "mini_1-1.R",
+      meta: [
+        ["문제", "'병상 운영이 비효율적이다'를 측정 가능한 질문으로 다시 쓰시오"]
+      ],
+      desc: "월별 병상이용률(occupancy)과 가용 병상일수를 계산하고, 이용률이 85%를 넘는 달을 review = TRUE로 표시하는 monthly_bed를 만듭니다.",
+      source: "# 1. 패키지 불러오기\nlibrary(dplyr)\nlibrary(lubridate)\n\n# 2. 월별 병상 데이터 생성\nmonthly_bed <- tibble::tibble(\n  month = c(\"2026-01\", \"2026-02\"),\n  inpatient_days = c(5400, 5100),\n  beds = c(200, 200)\n)\n\n# 3. 월 문자열을 날짜형으로 변환\nmonthly_bed <- monthly_bed |>\n  mutate(\n    month_date = ymd(paste0(month, \"-01\")),\n    \n    # 해당 월의 실제 일수 계산\n    days_in_month = days_in_month(month_date),\n    \n    # 가용 병상일수 = 병상 수 × 해당 월의 일수\n    available_bed_days = beds * days_in_month,\n    \n    # 병상가동률\n    occupancy = inpatient_days / available_bed_days,\n    \n    # 85% 초과 여부\n    review = occupancy > 0.85\n  )\n\n# 4. 결과 확인\nprint(monthly_bed, width = Inf)",
+      output: "> print(monthly_bed, width = Inf)\n# A tibble: 2 × 8\n  month   inpatient_days  beds month_date days_in_month available_bed_days occupancy review\n  <chr>            <dbl> <dbl> <date>             <int>              <dbl>     <dbl> <lgl> \n1 2026-01           5400   200 2026-01-01            31               6200     0.871 TRUE  \n2 2026-02           5100   200 2026-02-01            28               5600     0.911 TRUE  ",
+      note: "2월은 재원일수가 1월보다 적어도, 날짜 수가 28일로 짧아 가용 병상일수가 줄어 이용률은 오히려 더 높게 나타납니다."
+    },
+    {
+      id: "m2",
+      chapter: 1,
+      tab: "미니실습 1-2",
+      badge: "미니실습 1-2",
+      title: "원무·청구·만족도, 분석 단위 구분하기",
+      filename: "mini_1-2.R",
+      meta: [
+        ["문제", "원무·청구·만족도 데이터의 분석 단위와 생성 시점을 구분하시오"]
+      ],
+      desc: "tribble()로 데이터 원천(원무·청구·만족도)별 분석 단위, 생성 시점, 고유 식별자를 한 표(unit_table)에 정리합니다.",
+      source: "# 데이터 원천별 분석 단위 표 만들기\nunit_table <- tibble::tribble(\n  ~data_source, ~unit,          ~created_at,          ~key,\n  \"원무\",       \"환자 1회 방문\", \"접수·수납 시점\",     \"visit_id\",\n  \"청구\",       \"청구 명세 1건\", \"청구 제출·심사 시점\", \"claim_id\",\n  \"만족도\",     \"설문 응답 1건\", \"설문 제출 시점\",      \"response_id\"\n)\n\n# 결과 출력\nprint(unit_table, width = Inf)",
+      output: "> print(unit_table, width = Inf)\n# A tibble: 3 × 4\n  data_source unit           created_at            key        \n  <chr>       <chr>          <chr>                 <chr>      \n1 원무        환자 1회 방문 접수·수납 시점       visit_id   \n2 청구        청구 명세 1건 청구 제출·심사 시점 claim_id   \n3 만족도      설문 응답 1건 설문 제출 시점       response_id",
+      note: "데이터 출처별로 한 행의 의미가 다르므로, 행 수를 곧바로 같은 기준의 '환자 수'로 해석하면 안 됩니다."
+    },
+    {
+      id: "c2setup",
+      chapter: 2,
+      tab: "공통 설정 0-1",
+      badge: "공통 프로그램 0-1",
+      title: "패키지 설치와 가상 병원 데이터 생성",
+      filename: "common_0-1.R",
+      meta: [
+        ["n", "1,200"],
+        ["seed", "20260829"],
+        ["입력 개인정보", "없음(합성 데이터)"]
+      ],
+      desc: "제2장 이후 모든 R 예제가 공통으로 쓰는 hospital 객체(1,200행)를 만드는 프로그램입니다. 실제 환자자료가 아닌 교육용 합성 데이터이며, 이후 실습은 이 객체를 그대로 확장해 사용하므로 가장 먼저 실행해 둡니다.",
+      source: "# 0. 패키지 준비 ---------------------------------------------------------\npackages <- c(\n  \"tidyverse\", \"lubridate\", \"janitor\", \"broom\", \"effectsize\",\n  \"DBI\", \"RSQLite\", \"httr2\", \"jsonlite\",\n  \"tidymodels\", \"ranger\", \"vip\", \"tidytext\", \"slider\", \"renv\"\n)\n\nto_install <- setdiff(packages, rownames(installed.packages()))\nif (length(to_install) > 0) install.packages(to_install)\n\nlibrary(tidyverse)\nlibrary(lubridate)\n\n# 1. 재현 가능한 가상 병원 데이터 생성 ---------------------------------\nmake_hospital_data <- function(n = 1200, seed = 20260829) {\n  set.seed(seed)\n\n  age <- sample(18:95, n, replace = TRUE)\n  sex <- factor(sample(c(\"여\", \"남\"), n, replace = TRUE))\n  department <- factor(\n    sample(c(\"내과\", \"외과\", \"정형외과\", \"소아청소년과\"),\n           n, replace = TRUE, prob = c(.38, .22, .24, .16))\n  )\n  visit_date <- as.Date(\"2025-01-01\") +\n    sample(0:364, n, replace = TRUE)\n  wait_min <- pmax(1, round(rlnorm(n, log(24), .55)))\n  admitted <- rbinom(n, 1, plogis(-2.7 + .018 * age +\n                                  .35 * (department == \"내과\")))\n  los_days <- if_else(admitted == 1L,\n                      pmax(1L, rpois(n, 4) + 1L), 0L)\n  charge <- round(\n    35000 + age * 850 + wait_min * 190 +\n      admitted * 620000 + los_days * 135000 +\n      rnorm(n, 0, 45000),\n    -2\n  )\n  satisfaction <- pmin(\n    5L, pmax(1L, round(5.2 - wait_min / 35 + rnorm(n, 0, .75)))\n  )\n  readmit_prob <- plogis(-4.2 + .025 * age +\n                         .70 * admitted + .11 * los_days)\n  readmit30 <- factor(\n    if_else(rbinom(n, 1, readmit_prob) == 1, \"재입원\", \"미재입원\"),\n    levels = c(\"재입원\", \"미재입원\")\n  )\n\n  complaint_pool <- c(\n    \"대기 시간이 길고 안내가 부족함\",\n    \"직원이 친절하고 설명이 명확함\",\n    \"예약 변경 절차가 복잡함\",\n    \"진료 과정이 신속하고 만족스러움\",\n    \"주차와 동선 안내가 불편함\",\n    \"수납 절차가 빠르고 편리함\"\n  )\n\n  tibble(\n    patient_id = sprintf(\"P%05d\", seq_len(n)),\n    age, sex, department, visit_date, wait_min,\n    admitted = factor(admitted, levels = c(0, 1),\n                      labels = c(\"외래\", \"입원\")),\n    los_days, charge, satisfaction, readmit30,\n    region = factor(sample(c(\"도심\", \"근교\", \"농어촌\"),\n                           n, replace = TRUE, prob = c(.50, .32, .18))),\n    complaint = sample(complaint_pool, n, replace = TRUE)\n  ) |>\n    mutate(\n      wait_min = replace(wait_min, sample(row_number(), round(n * .025)), NA),\n      charge = replace(charge, sample(row_number(), round(n * .015)), NA)\n    )\n}\n\nhospital <- make_hospital_data()\nglimpse(hospital)",
+      output: "> library(tidyverse)\n── Attaching core tidyverse packages ──────────────────────────────────────────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.2.1     ✔ readr     2.2.0\n✔ forcats   1.0.1     ✔ stringr   1.6.0\n✔ ggplot2   4.0.3     ✔ tibble    3.3.1\n✔ lubridate 1.9.5     ✔ tidyr     1.3.2\n✔ purrr     1.2.2     \n── Conflicts ──────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package to force all conflicts to become errors\n> hospital <- make_hospital_data()\n> glimpse(hospital)\nRows: 1,200\nColumns: 13\n$ patient_id   <chr> \"P00001\", \"P00002\", \"P00003\", \"P00004\", \"P00005\", \"P00006\", \"P00007\", \"P00008\", \"P00009\", \"P00010\"…\n$ age          <int> 44, 32, 85, 95, 56, 87, 80, 42, 38, 21, 63, 18, 23, 72, 20, 56, 40, 30, 54, 21, 40, 93, 35, 40, 70…\n$ sex          <fct> 여, 남, 여, 여, 여, 여, 남, 남, 남, 여, 여, 여, 여, 남, 남, 남, 여, 여, 여, 여, 남, 남, 여, 여, 남, 남, 남, 남, 남, 남, 남, 남, 여,…\n$ department   <fct> 외과, 내과, 내과, 외과, 내과, 외과, 내과, 내과, 내과, 내과, 내과, 소아청소년과, 내과, 정형외과, 소아청소년과, 내과, 정형외과, 소아청소년과, 정형외과, 정형외과…\n$ visit_date   <date> 2025-04-11, 2025-07-31, 2025-06-01, 2025-01-11, 2025-04-05, 2025-11-13, 2025-10-07, 2025-12-23, 2…\n$ wait_min     <dbl> 13, 13, 29, 32, 16, 21, 37, 25, 33, 17, 23, 18, 33, 44, NA, 18, 19, 18, 65, 49, 35, 26, 17, 12, 10…\n$ admitted     <fct> 외래, 외래, 외래, 입원, 외래, 입원, 외래, 외래, 외래, 외래, 외래, 외래, 입원, 외래, 외래, 외래, 외래, 외래, 외래, 외래, 외래, 외래, 외래, 외래, 외래…\n$ los_days     <int> 0, 0, 0, 5, 0, 7, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 2, 0, 0, 0, 0,…\n$ charge       <dbl> 54400, 52100, 147100, 1423600, 34900, 1696100, 120400, 148500, 76800, 23900, 31100, NA, 1227500, 8…\n$ satisfaction <dbl> 4, 4, 4, 5, 4, 5, 4, 5, 4, 4, 4, 5, 4, 4, 3, 5, 4, 5, 3, 5, 5, 4, 4, 4, 4, 5, 4, 4, 4, 5, 5, 4, 3,…\n$ readmit30    <fct> 미재입원, 미재입원, 재입원, 미재입원, 미재입원, 미재입원, 미재입원, 미재입원, 미재입원, 미재입원, 미재입원, 미재입원, 미재입원, 미재입원, 미재입원, 미재입원, 미재입…\n$ region       <fct> 근교, 도심, 농어촌, 도심, 농어촌, 도심, 도심, 근교, 도심, 도심, 도심, 도심, 근교, 농어촌, 도심, 근교, 근교, 근교, 근교, 근교, 근교, 도심, 농어촌, 근교…\n$ complaint    <chr> \"대기 시간이 길고 안내가 부족함\", \"예약 변경 절차가 복잡함\", \"직원이 친절하고 설명이 명확함\", \"직원이 친절하고 설명이 명확함\", \"진료 과정이 신속하고 만족스러움\",…",
+      note: "set.seed(20260829)로 고정했으므로 age·sex·department 등 값 자체는 실습 환경이 달라도 동일하게 재현됩니다. 다만 dplyr·ggplot2 등 패키지 버전 번호는 설치된 버전에 따라 위 화면과 다를 수 있습니다. hospital이라는 1,200행 티블이 생성되며, 대기시간과 진료비에는 전처리 학습을 위한 일부 결측값이 포함됩니다."
+    },
+    {
+      id: "c2p1",
+      chapter: 2,
+      tab: "프로그램 2-1",
+      badge: "프로그램 2-1",
+      title: "객체·자료형·날짜를 한 번에 익히기",
+      filename: "program_2-1.R",
+      meta: [
+        ["입력", "환자 1명의 문자·숫자·논리·날짜·범주·결측값"],
+        ["확인 함수", "class(), levels(), is.na()"]
+      ],
+      desc: "환자 한 명의 값을 문자형·숫자형·논리형·날짜형·범주형·결측값으로 각각 저장하고, class()·levels()·is.na()로 자료형을 확인하는 list를 만듭니다.",
+      source: "patient_id <- \"P00001\"                  # 문자형\nage <- 67                               # 숫자형\nadmitted <- TRUE                        # 논리형\nvisit_date <- as.Date(\"2025-04-18\")     # 날짜형\ndepartment <- factor(\"내과\")            # 범주형\nwait_min <- NA_real_                    # 숫자형 결측\n\nlist(\n  id_class = class(patient_id),\n  age_class = class(age),\n  date_class = class(visit_date),\n  department_levels = levels(department),\n  wait_is_missing = is.na(wait_min)\n)",
+      output: "$id_class\n[1] \"character\"\n\n$age_class\n[1] \"numeric\"\n\n$date_class\n[1] \"Date\"\n\n$department_levels\n[1] \"내과\"\n\n$wait_is_missing\n[1] TRUE",
+      note: "id_class는 character, age_class는 numeric, date_class는 Date, department_levels는 factor가 가진 범주 \"내과\"가 됩니다. class()는 R이 값을 어떻게 해석하는지 보여주며, NA_real_처럼 결측의 자료형을 명시하면 이후 열 결합에서 예기치 않은 형변환을 줄일 수 있습니다."
+    },
+    {
+      id: "c2p2",
+      chapter: 2,
+      tab: "프로그램 2-2",
+      badge: "프로그램 2-2",
+      title: "첫 환자 통계와 NA 처리",
+      filename: "program_2-2.R",
+      meta: [
+        ["입력", "연령 벡터 c(45, 52, 67, NA, 38)"],
+        ["핵심 함수", "mean(), min(), max(), is.na(), na.rm"]
+      ],
+      desc: "연령 벡터에 결측값(NA)이 있을 때 mean()·min()·max()·is.na()가 어떻게 동작하는지 확인하고, na.rm = TRUE로 결측을 제외한 통계를 계산합니다.",
+      source: "ages <- c(45, 52, 67, NA, 38)\n\nmean(ages)                  # NA\nmean(ages, na.rm = TRUE)    # 50.5\nmin(ages, na.rm = TRUE)     # 38\nmax(ages, na.rm = TRUE)     # 67\nsum(is.na(ages))            # 1",
+      output: "> mean(ages)                  # NA\n[1] NA\n> mean(ages, na.rm = TRUE)    # 50.5\n[1] 50.5\n> min(ages, na.rm = TRUE)     # 38\n[1] 38\n> max(ages, na.rm = TRUE)     # 67\n[1] 67\n> sum(is.na(ages))            # 1\n[1] 1",
+      note: "결측을 제외한 평균은 50.5세입니다. R의 통계 함수는 기본적으로 결측을 전파하며, na.rm = TRUE는 결측을 삭제한 뒤 계산한다는 뜻이지 결측 원인을 해결했다는 뜻은 아닙니다. T와 F는 덮어쓸 수 있는 객체이므로 TRUE, FALSE를 쓰고, R은 대소문자를 구분하므로 Age와 age는 다른 객체입니다."
+    },
+    {
+      id: "c2p3",
+      chapter: 2,
+      tab: "프로그램 2-3",
+      badge: "프로그램 2-3",
+      title: "히스토그램으로 대기시간 분포 보기",
+      filename: "program_2-3.R",
+      meta: [
+        ["그래프 종류", "히스토그램 (geom_histogram)"],
+        ["사용 변수", "wait_min(대기시간)"]
+      ],
+      desc: "ggplot2로 외래 대기시간(wait_min)의 분포를 히스토그램으로 그려, 짧은 대기시간에 몰려 있으면서도 오른쪽으로 길게 늘어지는 대기시간의 특징을 확인합니다.",
+      source: "ggplot(hospital, aes(x = wait_min)) +\n  geom_histogram(binwidth = 5, fill = \"#0E7C7B\", color = \"white\") +\n  labs(\n    title = \"외래 대기시간 분포\",\n    x = \"대기시간(분)\",\n    y = \"환자 수\"\n  ) +\n  theme_minimal()",
+      output: "> ggplot(hospital, aes(x = wait_min)) +\n+     geom_histogram(binwidth = 5, fill = \"#0E7C7B\", color = \"white\") +\n+     labs(\n+         title = \"외래 대기시간 분포\",\n+         x = \"대기시간(분)\",\n+         y = \"환자 수\"\n+     ) +\n+     theme_minimal()\n경고메시지(들):\nRemoved 30 rows containing non-finite outside the scale range (`stat_bin()`).",
+      outputImage: "data:image/png;base64,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",
+      note: "wait_min은 rlnorm(n, log(24), .55)로 만든 로그정규분포 난수이므로, 대다수는 15~25분 근처에 몰려 있고 소수는 75분, 100분을 넘어서까지 길게 이어지는 오른쪽 꼬리가 나타납니다. \"Removed 30 rows\" 경고는 오류가 아니라, 공통 프로그램 0-1에서 결측으로 만든 wait_min 30건(1,200명의 약 2.5%)이 그래프에서 제외되었다는 안내입니다."
+    },
+    {
+      id: "c2p4",
+      chapter: 2,
+      tab: "프로그램 2-4",
+      badge: "프로그램 2-4",
+      title: "산점도로 나이·진료비 관계 보기",
+      filename: "program_2-4.R",
+      meta: [
+        ["그래프 종류", "산점도 (geom_point)"],
+        ["사용 변수", "age, charge, admitted"]
+      ],
+      desc: "ggplot2로 나이(age)와 진료비(charge)의 관계를 산점도로 그리고, 입원 여부(admitted)에 따라 색을 구분해 두 집단의 진료비 수준이 어떻게 다른지 확인합니다.",
+      source: "ggplot(hospital, aes(x = age, y = charge, color = admitted)) +\n  geom_point(alpha = 0.4, size = 1.6) +\n  labs(\n    title = \"나이에 따른 진료비 분포\",\n    x = \"나이\",\n    y = \"진료비(원)\",\n    color = \"입원 여부\"\n  ) +\n  theme_minimal()",
+      output: "> ggplot(hospital, aes(x = age, y = charge, color = admitted)) +\n+     geom_point(alpha = 0.4, size = 1.6) +\n+     labs(\n+         title = \"나이에 따른 진료비 분포\",\n+         x = \"나이\",\n+         y = \"진료비(원)\",\n+         color = \"입원 여부\"\n+     ) +\n+     theme_minimal()\n경고메시지(들):\nRemoved 18 rows containing missing values or values outside the scale range (`geom_point()`).",
+      outputImage: "data:image/png;base64,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",
+      note: "공통 프로그램 0-1의 진료비 생성식(admitted * 620000 + los_days * 135000 포함)에 따라 입원(청록) 환자는 80만~200만 원대에서, 외래(빨강) 환자는 0원 근처에서 서로 다른 띠를 이루며 뚜렷이 갈라집니다. 나이가 많을수록 입원 비율이 늘어나는 경향도 함께 보입니다. \"Removed 18 rows\" 경고는 오류가 아니라, charge 결측 18건(1,200명의 약 1.5%)이 제외되었다는 안내입니다."
+    },
+    {
+      id: "c2m1",
+      chapter: 2,
+      tab: "미니실습 2-1",
+      badge: "미니실습 2-1",
+      title: "진료비 평균과 결측 수 구하기",
+      filename: "mini_2-1.R",
+      meta: [
+        ["문제", "charge <- c(120000, 95000, NA, 210000)의 평균과 결측 수를 구하시오"],
+        ["채점 기준", "코드 4점, 평균 2점, 결측 수 2점, 유효 분모 설명 2점"]
+      ],
+      desc: "charge 벡터의 평균과 결측 수를 구하는 모범답안입니다. na.rm = TRUE로 결측을 제외한 평균과 sum(is.na())로 결측 건수를 함께 구합니다.",
+      source: "charge <- c(120000, 95000, NA, 210000) # 진료비 벡터\nmean_charge <- mean(charge, na.rm = TRUE) # 결측 제외 평균\nmissing_n <- sum(is.na(charge))           # 결측 건수\nmean_charge\nmissing_n",
+      output: "> mean_charge\n[1] 141666.7\n> missing_n\n[1] 1",
+      note: "평균의 유효 분모는 3건이며 전체 4건 중 1건이 제외되었다고 함께 보고합니다. 흔한 오답: mean(charge)만 실행하면 NA가 나오며, NA를 0원으로 대체하면 평균이 왜곡됩니다."
+    },
+    {
+      id: "c2m2",
+      chapter: 2,
+      tab: "미니실습 2-2",
+      badge: "미니실습 2-2",
+      title: "절사평균(trim)의 의미 확인하기",
+      filename: "mini_2-2.R",
+      meta: [
+        ["문제", "?mean에서 trim 인수의 의미를 설명하시오"],
+        ["채점 기준", "정의 4점, 양쪽 제외 2점, 코드·결과 2점, 한계 2점"]
+      ],
+      desc: "mean()의 trim 인수가 상위·하위 극단값을 제외한 절사평균을 계산하는 원리를 x 벡터로 확인합니다.",
+      source: "x <- c(10, 11, 12, 13, 100) # 100은 큰 극단값\nmean(x)                    # 일반 평균: 29.2\nmean(x, trim = .2)         # 양 끝 20% 제외: 12",
+      output: "> mean(x)                    # 일반 평균: 29.2\n[1] 29.2\n> mean(x, trim = .2)         # 양 끝 20% 제외: 12\n[1] 12",
+      note: "절사평균은 극단값 영향을 낮추지만, 의료적으로 중요한 고위험 관측값을 삭제한다는 뜻은 아닙니다. 흔한 오답: trim=.2를 전체 20%가 아니라 양쪽 각각 20% 제외로 이해해야 합니다."
+    },
+    {
+      id: "c3_31",
+      chapter: 3,
+      tab: "3.1 벡터",
+      badge: "3.1",
+      title: "벡터 — 환자 연령 데이터 다루기",
+      filename: "section_3-1.R",
+      meta: [
+        ["핵심 개념", "벡터 생성·인덱싱·연산·조건 선택"],
+        ["핵심 함수", "c(), mean(), [ ], 비교연산자"]
+      ],
+      desc: "같은 자료형의 값을 한 줄로 묶은 벡터는 R에서 가장 기본이 되는 자료구조입니다. 환자 5명의 연령을 벡터로 만들어 생성·인덱싱(위치로 값 꺼내기)·연산·조건 선택까지 한 번에 익힙니다.",
+      source: "age <- c(54, 71, 63, 29, 45)   # 환자 5명의 나이\n\nmean(age)          # 평균 나이\nage[1]             # 첫 번째 환자 나이\nage[2:3]           # 두 번째~세 번째 환자 나이\nage + 1            # 모든 환자가 한 살씩 더 먹었다면\nage > 50           # 50세 초과 여부(TRUE/FALSE)\nage[age > 50]      # 50세를 초과하는 환자 나이만 선택\nsum(age > 50)      # 50세 초과 환자 수",
+      output: "> mean(age)\n[1] 52.4\n> age[1]\n[1] 54\n> age[2:3]\n[1] 71 63\n> age + 1\n[1] 55 72 64 30 46\n> age > 50\n[1]  TRUE  TRUE  TRUE FALSE FALSE\n> age[age > 50]\n[1] 54 71 63\n> sum(age > 50)\n[1] 3",
+      explain: [
+        "c()는 여러 값을 하나로 묶어 벡터를 만드는 함수입니다(combine의 c). age는 환자 5명의 나이를 담은 숫자 벡터가 됩니다.",
+        "age[1]처럼 대괄호 [ ] 안에 위치(인덱스)를 넣으면 그 위치의 값을 꺼낼 수 있습니다. R은 위치가 1부터 시작합니다(다른 언어처럼 0부터가 아님). age[2:3]은 2번째부터 3번째까지 연속된 값을 꺼냅니다.",
+        "age + 1처럼 벡터에 숫자를 더하거나 곱하면 벡터 안의 모든 값에 똑같이 적용됩니다. 이를 벡터 연산이라고 하며, 반복문 없이 한 번에 계산할 수 있는 R의 큰 장점입니다.",
+        "age > 50는 각 값이 50보다 큰지를 하나씩 비교해 TRUE/FALSE로 이루어진 논리 벡터를 만듭니다. 이 논리 벡터를 다시 age[ ] 안에 넣으면(age[age > 50]) TRUE인 위치의 값만 골라낼 수 있습니다 — 이것이 '조건을 이용한 값 선택'입니다.",
+        "sum(age > 50)은 TRUE를 1, FALSE를 0으로 취급해 더하는 원리를 이용해 조건을 만족하는 개수를 셉니다."
+      ],
+      note: "인덱싱은 '몇 번째'라는 위치 기반 선택이고, 조건 선택은 '어떤 값을 만족하는가'라는 값 기반 선택이라는 차이를 구분해서 기억해 두면 헷갈리지 않습니다."
+    },
+    {
+      id: "c3_32",
+      chapter: 3,
+      tab: "3.2 행렬",
+      badge: "3.2",
+      title: "행렬 — 병동별·월별 입원환자 수 정리하기",
+      filename: "section_3-2.R",
+      meta: [
+        ["핵심 개념", "행렬 생성·행과 열 선택·연산"],
+        ["핵심 함수", "matrix(), rowSums(), colMeans()"]
+      ],
+      desc: "같은 자료형의 값을 행과 열로 배열한 2차원 자료구조인 행렬로, 병동별·월별 입원환자 수를 정리하고 행/열 단위로 값을 꺼내거나 집계합니다.",
+      source: "beds <- matrix(\n  c(32, 28, 35, 41, 39, 44),\n  nrow = 2, byrow = TRUE,\n  dimnames = list(c(\"내과병동\", \"외과병동\"), c(\"1월\", \"2월\", \"3월\"))\n)\n\nbeds                 # 행렬 전체 확인\nbeds[\"내과병동\", ]   # 내과병동의 월별 입원환자 수\nbeds[, \"2월\"]        # 2월의 병동별 입원환자 수\nbeds + 5             # 병동마다 병상을 5개씩 늘렸다면\nrowSums(beds)        # 병동별 1분기 합계\ncolMeans(beds)       # 월별 평균 입원환자 수",
+      output: "> beds\n         1월 2월 3월\n내과병동   32   28   35\n외과병동   41   39   44\n> beds[\"내과병동\", ]\n1월 2월 3월 \n 32  28  35 \n> beds[, \"2월\"]\n내과병동 외과병동 \n      28       39 \n> beds + 5\n         1월 2월 3월\n내과병동   37   33   40\n외과병동   46   44   49\n> rowSums(beds)\n내과병동 외과병동 \n      95      124 \n> colMeans(beds)\n 1월  2월  3월 \n36.5 33.5 39.5 ",
+      explain: [
+        "matrix(값, nrow = 행 수, byrow = TRUE, ...)는 값을 지정한 행 수에 맞춰 '행 방향'으로 채워 넣습니다. byrow = TRUE가 없으면 R은 기본적으로 열 방향으로 값을 채우므로, 데이터를 입력한 순서와 실제 배치가 달라질 수 있습니다.",
+        "dimnames는 행과 열에 이름을 붙이는 옵션입니다. 이름을 붙여두면 beds[\"내과병동\", ]처럼 숫자 위치 대신 실제 이름으로 값을 꺼낼 수 있어 코드를 읽기 쉬워집니다.",
+        "행렬에서는 [행, 열] 형태로 대괄호 두 자리를 씁니다. 행 자리를 비워두면(beds[, \"2월\"]) '모든 행'이라는 뜻이 되어 해당 열 전체를 가져옵니다.",
+        "beds + 5처럼 행렬에 숫자를 더하면 벡터와 마찬가지로 모든 칸에 똑같이 적용됩니다.",
+        "rowSums()·colMeans()는 각각 행 방향 합계, 열 방향 평균을 구하는 함수로, 병동별 합계나 월별 평균처럼 한쪽 방향으로 집계할 때 자주 사용합니다."
+      ],
+      note: "행렬은 모든 칸이 같은 자료형(여기서는 숫자)이어야 합니다. 문자와 숫자를 한 행렬에 함께 넣으면 전체가 문자형으로 강제 변환되므로, 서로 다른 자료형을 함께 다뤄야 한다면 3.5의 데이터프레임을 사용해야 합니다."
+    },
+    {
+      id: "c3_33",
+      chapter: 3,
+      tab: "3.3 리스트",
+      badge: "3.3",
+      title: "리스트 — 환자 한 명의 정보를 한 번에 묶기",
+      filename: "section_3-3.R",
+      meta: [
+        ["핵심 개념", "리스트 생성·요소 접근"],
+        ["핵심 함수", "list(), $, [[ ]]"]
+      ],
+      desc: "리스트는 자료형이 서로 다른 값들을 하나의 객체 안에 함께 저장할 수 있는 자료구조입니다. 환자 한 명의 정보(문자·숫자·이름이 붙은 벡터)를 리스트 하나로 묶어 관리합니다.",
+      source: "patient_info <- list(\n  patient_id = \"P001\",\n  age = 54,\n  department = \"내과\",\n  vitals = c(bp = 128, hr = 76)   # 혈압(bp), 맥박(hr)\n)\n\npatient_info$age              # 이름으로 접근(가장 많이 씀)\npatient_info[[\"department\"]]  # 이중 대괄호로 접근(같은 결과)\npatient_info$vitals[\"bp\"]     # 리스트 속 벡터의 요소까지 접근\nlength(patient_info)          # 리스트에 담긴 항목 수",
+      output: "> patient_info$age\n[1] 54\n> patient_info[[\"department\"]]\n[1] \"내과\"\n> patient_info$vitals[\"bp\"]\n bp \n128 \n> length(patient_info)\n[1] 4",
+      explain: [
+        "list()는 벡터와 달리 문자·숫자·벡터처럼 서로 다른 자료형이나 길이를 하나의 객체 안에 함께 담을 수 있습니다. patient_info 안에는 문자(patient_id, department), 숫자(age), 이름이 붙은 숫자 벡터(vitals)가 함께 들어 있습니다.",
+        "리스트 항목에 접근하는 방법은 두 가지입니다. $ 뒤에 이름을 쓰는 방법이 가장 널리 쓰이고, [[\"이름\"]]처럼 이중 대괄호를 써도 같은 값을 얻습니다.",
+        "patient_info$vitals[\"bp\"]처럼 접근을 이어서 쓰면, 리스트 안에 들어 있는 벡터의 특정 요소까지 한 번에 꺼낼 수 있습니다.",
+        "length()는 리스트에 몇 개의 항목이 들어 있는지를 셉니다. 여기서는 patient_id·age·department·vitals 네 개이므로 4가 됩니다."
+      ],
+      note: "리스트는 환자 한 명의 다양한 정보를 하나로 묶기에 좋지만, 환자가 여러 명일 때 표 형태로 관리하려면 3.5의 데이터프레임이나 3.6의 티블이 더 적합합니다. 리스트는 '한 사람의 다면적 정보', 데이터프레임/티블은 '여러 사람의 같은 항목'을 담는다고 구분해 기억하면 좋습니다."
+    },
+    {
+      id: "c3_34",
+      chapter: 3,
+      tab: "3.4 팩터",
+      badge: "3.4",
+      title: "팩터 — 성별·진료과·입원 여부를 범주형으로 관리하기",
+      filename: "section_3-4.R",
+      meta: [
+        ["핵심 개념", "범주형 데이터, 팩터 생성"],
+        ["핵심 함수", "factor(), levels(), table()"]
+      ],
+      desc: "성별·진료과·입원 여부처럼 정해진 범주(수준) 중 하나의 값을 가지는 데이터는 팩터(factor)로 관리합니다. 팩터로 만들면 범주별 개수 집계나 순서 지정이 쉬워집니다.",
+      source: "sex <- factor(c(\"여\", \"남\", \"여\", \"여\", \"남\"), levels = c(\"남\", \"여\"))\ndepartment <- factor(c(\"내과\", \"외과\", \"내과\"),\n                      levels = c(\"내과\", \"외과\", \"정형외과\"))\nadmitted <- factor(c(1, 0, 1), levels = c(0, 1), labels = c(\"외래\", \"입원\"))\n\nlevels(sex)       # sex가 가질 수 있는 범주\ntable(sex)        # 범주별 인원 수\nlevels(department)\nadmitted          # 0/1이 \"외래\"/\"입원\"이라는 이름으로 표시됨",
+      output: "> levels(sex)\n[1] \"남\" \"여\"\n> table(sex)\nsex\n남 여 \n 2  3 \n> levels(department)\n[1] \"내과\"     \"외과\"     \"정형외과\"\n> admitted\n[1] 입원 외래 입원\nLevels: 외래 입원",
+      explain: [
+        "factor(값, levels = 범주 목록)은 문자·숫자 벡터를 '정해진 범주만 가질 수 있는' 값으로 바꿉니다. levels에 적어준 순서가 이후 표·그래프에서의 출력 순서가 됩니다.",
+        "levels()는 그 팩터가 가질 수 있는 범주 목록을 보여주고, table()은 각 범주에 몇 개의 값이 속하는지 빈도를 셉니다.",
+        "admitted <- factor(c(1, 0, 1), levels = c(0, 1), labels = c(\"외래\", \"입원\"))처럼 levels와 labels를 함께 쓰면, 원래 값(0/1)을 사람이 읽기 쉬운 이름(외래/입원)으로 바꿔서 보여줄 수 있습니다. levels와 labels는 순서대로 1:1 대응됩니다(0→외래, 1→입원).",
+        "팩터로 관리하면 오타로 인한 범주 불일치(예: \"내과\"와 \"내과 \"를 다른 범주로 인식)를 levels() 확인을 통해 미리 점검할 수 있습니다."
+      ],
+      note: "실제 데이터에서 성별이 \"남자\"/\"여자\"/\"M\"/\"F\" 등 여러 방식으로 섞여 입력된 경우가 흔합니다. factor()로 변환하기 전에 반드시 unique()로 실제 입력된 값의 종류를 먼저 확인하는 습관을 들이면 좋습니다."
+    },
+    {
+      id: "c3_35",
+      chapter: 3,
+      tab: "3.5 데이터프레임",
+      badge: "3.5",
+      title: "데이터프레임 — 여러 환자를 표 형태로 관리하기",
+      filename: "section_3-5.R",
+      meta: [
+        ["핵심 개념", "행과 열, 변수와 관측값"],
+        ["핵심 함수", "data.frame(), nrow(), ncol(), $"]
+      ],
+      desc: "데이터프레임은 각 열이 하나의 변수를, 각 행이 하나의 관측 대상(환자)을 나타내는 표 형태의 자료구조입니다. 환자 3명의 기본정보를 데이터프레임으로 만들어 행·열 선택과 조건별 추출을 익힙니다.",
+      source: "patient <- data.frame(\n  patient_id = c(\"P001\", \"P002\", \"P003\"),\n  age = c(54, 71, 29),\n  admission = c(FALSE, TRUE, FALSE)\n)\n\nnrow(patient)                    # 관측값(환자) 수 = 행 수\nncol(patient)                    # 변수(열) 수\npatient$age                      # age 열 전체 선택\npatient[1, ]                     # 첫 번째 환자(행) 선택\npatient[patient$admission, ]     # 입원 중인 환자만 선택",
+      output: "> nrow(patient)\n[1] 3\n> ncol(patient)\n[1] 3\n> patient$age\n[1] 54 71 29\n> patient[1, ]\n  patient_id age admission\n1       P001  54     FALSE\n> patient[patient$admission, ]\n  patient_id age admission\n2       P002  71      TRUE",
+      explain: [
+        "data.frame()은 이름 = 값 형태로 여러 벡터를 열로 묶어 표를 만듭니다. 이때 각 벡터(열)의 길이가 반드시 같아야 합니다 — patient_id·age·admission이 모두 3개씩이므로 3행짜리 표가 만들어집니다.",
+        "nrow()·ncol()은 각각 행(관측값) 개수와 열(변수) 개수를 셉니다. '한 행 = 환자 한 명', '한 열 = 하나의 특성(변수)'이라는 원칙을 여기서 확인할 수 있습니다.",
+        "patient$age처럼 $ 뒤에 열 이름을 쓰면 그 열 전체를 벡터로 꺼냅니다. 데이터프레임에서 특정 변수만 뽑아 계산할 때 가장 많이 쓰는 방법입니다.",
+        "patient[행, 열] 형태의 대괄호로 행이나 열을 선택합니다. patient[1, ]처럼 열 자리를 비우면 '모든 열'이라는 뜻이 되어 그 행 전체(환자 한 명의 모든 정보)를 가져옵니다.",
+        "patient[patient$admission, ]는 admission이 TRUE인 행만 남기는 조건 선택입니다. 3.1에서 배운 벡터의 조건 선택(age[age > 50])과 완전히 같은 원리가 데이터프레임의 행 선택에도 그대로 적용됩니다."
+      ],
+      note: "행렬과 달리 데이터프레임은 열마다 서로 다른 자료형(문자·숫자·논리)을 가질 수 있습니다. 이것이 실제 환자 데이터처럼 '이름은 문자, 나이는 숫자, 입원 여부는 논리값'인 표를 다룰 때 행렬 대신 데이터프레임을 쓰는 이유입니다."
+    },
+    {
+      id: "c3_36",
+      chapter: 3,
+      tab: "3.6 티블",
+      badge: "3.6",
+      title: "티블 — tidyverse의 데이터프레임",
+      filename: "section_3-6.R",
+      meta: [
+        ["핵심 개념", "tibble() 사용, 데이터프레임과의 차이"],
+        ["핵심 함수", "tibble(), class()"]
+      ],
+      desc: "티블(tibble)은 tidyverse 패키지들이 사용하는 개선된 데이터프레임입니다. 진료비 데이터를 티블로 만들어 데이터프레임과 어떻게 다르게 출력되는지 확인합니다.",
+      source: "library(tibble)\n\npatient <- tibble(\n  patient_id = c(\"P001\", \"P002\"),\n  age = c(54, 71),\n  cost = c(42000, 118000)\n)\n\npatient        # 출력 시 자료형(<chr>, <dbl>)이 함께 표시됨\nclass(patient) # 데이터프레임이면서 동시에 티블임을 확인",
+      output: "> patient\n# A tibble: 2 × 3\n  patient_id   age   cost\n  <chr>      <dbl>  <dbl>\n1 P001          54  42000\n2 P002          71 118000\n> class(patient)\n[1] \"tbl_df\"     \"tbl\"        \"data.frame\"",
+      explain: [
+        "tibble()은 data.frame()과 쓰는 방식이 거의 같지만, 결과를 출력할 때 행 수·열 수와 각 열의 자료형(<chr>=문자형, <dbl>=실수형)을 함께 보여줘 데이터를 더 빠르게 파악할 수 있게 해줍니다.",
+        "class(patient) 결과가 \"tbl_df\" \"tbl\" \"data.frame\" 세 가지로 나오는 것은, 티블이 데이터프레임의 기능을 모두 물려받으면서 몇 가지 동작만 개선한 '데이터프레임의 상위 호환'이라는 뜻입니다. 그래서 nrow()·$·[ ] 같은 데이터프레임 문법을 티블에도 그대로 쓸 수 있습니다.",
+        "데이터프레임과의 대표적인 차이 두 가지: ① data.frame()은 예전 버전 R에서 문자열을 자동으로 팩터로 바꾸는 경우가 있었지만 tibble()은 입력한 자료형을 그대로 유지합니다. ② data.frame에서 열 하나만 [ ]로 뽑으면 벡터로 축소되어 나올 때가 있지만, 티블은 [ ]로 뽑아도 항상 표(티블) 형태를 유지해 예상치 못한 자료형 변화를 줄여줍니다."
+      ],
+      note: null
+    },
+    {
+      id: "c3_37",
+      chapter: 3,
+      tab: "3.7 구조 설계",
+      badge: "3.7",
+      title: "의료데이터 구조 설계 — 변수마다 알맞은 자료형 정하기",
+      filename: "section_3-7.R",
+      meta: [
+        ["핵심 개념", "변수별 자료형 설계 원칙"],
+        ["다루는 변수", "환자번호·연령·성별·방문일·진료과·진료비·입원여부"]
+      ],
+      desc: "실제 데이터를 만들기 전에 각 변수를 어떤 자료형으로 저장할지, 어떤 점을 미리 점검해야 하는지 설계하는 단계입니다. 지금까지 배운 문자형·숫자형·범주형(factor)·날짜형(Date)을 환자 데이터의 실제 변수에 적용해 봅니다.",
+      designTable: [
+        ["변수", "권장 자료형", "설계 시 확인할 점"],
+        ["환자번호(patient_id)", "문자형(character)", "숫자로 저장하면 앞자리 0이 사라지거나 연산에 잘못 쓰일 수 있음. 병원 내에서 중복되지 않는지 점검"],
+        ["연령(age)", "숫자형(numeric)", "음수·150세처럼 비정상적인 값과 결측(NA) 점검. 필요하면 연령대 구간으로 나눠 팩터로 별도 관리"],
+        ["성별(sex)", "범주형(factor)", "\"남\"/\"여\", \"M\"/\"F\" 등 표기 방식을 데이터 전체에서 통일한 뒤 factor()로 변환"],
+        ["방문일(visit_date)", "날짜형(Date)", "문자로 들어온 날짜는 반드시 as.Date()로 변환. 연-월-일 등 날짜 형식을 통일"],
+        ["진료과(department)", "범주형(factor)", "병원마다 다르게 쓰는 진료과 명칭을 같은 범주로 통일. 범주가 너무 많으면 대분류로 묶는 것도 고려"],
+        ["진료비(charge)", "숫자형(numeric)", "음수·결측·이상치 점검. 통화 단위(원)를 문서에 명시"],
+        ["입원 여부(admitted)", "범주형(factor)", "0/1, TRUE/FALSE 등 원래 값이 무엇을 의미하는지 반드시 함께 기록해 두어야 나중에 헷갈리지 않음"]
+      ],
+      source: "patients <- tibble(\n  patient_id = c(\"P00001\", \"P00002\", \"P00003\"),  # character\n  age        = c(54, 71, 29),  # numeric\n  sex        = factor(c(\"여\", \"남\", \"여\")),  # factor\n  visit_date = as.Date(c(\"2026-01-05\", \"2026-01-07\",\n                         \"2026-01-10\")),  # Date\n  department = factor(c(\"내과\", \"외과\", \"내과\")),  # factor\n  charge     = c(42000, 118000, 35000),  # numeric\n  admitted   = factor(c(0, 1, 0), levels = c(0, 1),\n                      labels = c(\"외래\", \"입원\"))\n)\n\nglimpse(patients)",
+      output: "> glimpse(patients)\nRows: 3\nColumns: 7\n$ patient_id <chr> \"P00001\", \"P00002\", \"P00003\"\n$ age        <dbl> 54, 71, 29\n$ sex        <fct> 여, 남, 여\n$ visit_date <date> 2026-01-05, 2026-01-07, 2026-01-10\n$ department <fct> 내과, 외과, 내과\n$ charge     <dbl> 42000, 118000, 35000\n$ admitted   <fct> 외래, 입원, 외래",
+      explain: [
+        "위 표(설계 가이드)의 자료형 선택을 그대로 코드로 옮긴 것이 이 patients 티블입니다. 일곱 개 변수 모두 3.1~3.6에서 배운 문자형·숫자형·factor·Date 중 하나로 정확히 지정되어 있습니다.",
+        "glimpse()로 확인하면 각 열의 자료형(<chr>, <dbl>, <fct>, <date>)이 설계한 대로 만들어졌는지 한눈에 검증할 수 있습니다. 실제로 데이터를 받았을 때도 가장 먼저 glimpse()로 자료형부터 확인하는 습관을 들이면 좋습니다.",
+        "제2장에서 만들었던 hospital 데이터도 바로 이 설계 원칙(환자번호는 문자형, 성별·진료과·입원여부는 factor, 방문일은 Date)을 그대로 따른 것입니다."
+      ],
+      note: "설계를 먼저 정하고 코드를 쓰는 순서가 중요합니다. 자료형을 정하지 않고 데이터를 만들면, 숫자로 저장된 환자번호의 앞자리 0이 사라지는 등 나중에 고치기 어려운 문제가 생길 수 있습니다."
+    },
+    {
+      id: "c3_38a",
+      chapter: 3,
+      tab: "3.8-1 실습",
+      badge: "3.8-1",
+      title: "[실습] 환자 연령 벡터 만들기",
+      filename: "practice_3-8-1.R",
+      meta: [
+        ["문제", "환자 5명의 연령 54, 71, 63, 29, 45를 벡터로 만들고 평균과 50세 초과 환자 수를 구하시오"],
+        ["채점 기준", "벡터 생성 3점, 평균 3점, 조건 선택·개수 4점"]
+      ],
+      desc: "3.1에서 배운 벡터 생성과 조건을 이용한 값 선택을 그대로 적용하는 모범답안입니다.",
+      source: "age <- c(54, 71, 63, 29, 45)\nmean(age)\nsum(age > 50)",
+      output: "> mean(age)\n[1] 52.4\n> sum(age > 50)\n[1] 3",
+      explain: [
+        "c()로 벡터를 만든 뒤 mean()으로 평균을, age > 50과 sum()을 조합해 50세를 초과하는 환자 수를 구합니다. 3.1에서 익힌 함수만으로 해결되는 문제입니다."
+      ],
+      note: "흔한 오답: age > 50에는 50세 '초과'만 포함되고 정확히 50세인 환자는 포함되지 않는다는 점을 놓치는 경우가 많습니다. 50세를 포함하려면 age >= 50을 써야 합니다."
+    },
+    {
+      id: "c3_38b",
+      chapter: 3,
+      tab: "3.8-2 실습",
+      badge: "3.8-2",
+      title: "[실습] 진료과를 팩터로 변환",
+      filename: "practice_3-8-2.R",
+      meta: [
+        ["문제", "진료과 벡터 c(\"내과\",\"외과\",\"내과\",\"정형외과\")를 팩터로 변환하고 진료과별 환자 수를 구하시오"],
+        ["채점 기준", "factor() 변환 4점, table() 사용 3점, 결과 해석 3점"]
+      ],
+      desc: "3.4에서 배운 factor()와 table()을 응용하는 모범답안입니다.",
+      source: "department <- factor(c(\"내과\", \"외과\", \"내과\", \"정형외과\"))\ntable(department)",
+      output: "> table(department)\ndepartment\n    내과     외과 정형외과 \n       2        1        1 ",
+      explain: [
+        "factor()로 변환할 때 levels를 따로 지정하지 않으면 데이터에 나타난 값들을 한글 가나다순으로 자동 정렬해 범주로 만듭니다. table()은 각 범주에 속한 값의 개수를 세어 보여줍니다."
+      ],
+      note: "실제 병원 데이터에서는 진료과 이름이 \"정형외과\"와 \"정형외과 \"(끝에 공백)처럼 미세하게 다르게 입력되어 있는 경우가 많습니다. factor() 변환 전 반드시 table()이나 unique()로 실제 범주 개수를 확인해야 합니다."
+    },
+    {
+      id: "c3_38c",
+      chapter: 3,
+      tab: "3.8-3 실습",
+      badge: "3.8-3",
+      title: "[실습] 환자 기본정보 데이터프레임 만들기",
+      filename: "practice_3-8-3.R",
+      meta: [
+        ["문제", "환자번호·나이·입원여부를 담은 데이터프레임을 만들고 입원 중인 환자만 추출하시오"],
+        ["채점 기준", "데이터프레임 생성 4점, 조건 선택 4점, 결과 해석 2점"]
+      ],
+      desc: "3.5에서 배운 data.frame()과 조건을 이용한 행 선택을 응용하는 모범답안입니다.",
+      source: "patient <- data.frame(\n  patient_id = c(\"P001\", \"P002\", \"P003\"),\n  age = c(54, 71, 29),\n  admission = c(FALSE, TRUE, FALSE)\n)\n\npatient[patient$admission, ]",
+      output: "> patient[patient$admission, ]\n  patient_id age admission\n2       P002  71      TRUE",
+      explain: [
+        "patient$admission은 각 환자의 입원 여부를 담은 논리 벡터입니다. 이를 patient[ , ]의 행 자리에 넣으면 TRUE인 행(입원 중인 환자)만 남기고 나머지는 제외합니다. 3.1의 age[age > 50]과 원리가 완전히 같습니다."
+      ],
+      note: "결과의 행 번호가 2로 남아 있는 것은 원래 데이터프레임에서 두 번째 행이었다는 표시입니다. 행이 삭제된 것이 아니라 '선택되지 않은 것'뿐이므로, 원래 순서를 기억해 두면 나중에 원본과 대조할 때 유용합니다."
+    },
+    {
+      id: "c4concept",
+      chapter: 4,
+      tab: "개념 4-1~4-3",
+      badge: "개념 4-1~4-3",
+      title: "전처리 핵심 개념 — 나이 필터링 · 결측 플래그 · 이상값 조건",
+      filename: "concept_4.R",
+      meta: [
+        ["선행 조건", "제2장 공통 프로그램 0-1에서 만든 hospital 객체가 있어야 합니다"],
+        ["핵심 함수", "filter(), mutate(), is.na(), quantile(), IQR()"]
+      ],
+      desc: "제4장 실습은 모두 제2장에서 만든 hospital 데이터를 그대로 사용합니다. 본격적인 파이프라인 전에, 나이 필터링·결측 플래그·이상값 조건이라는 세 가지 핵심 표현을 먼저 따로 연습합니다.",
+      designTable: [
+        ["작업", "핵심 함수", "의료행정 관점의 질문"],
+        ["나이·조건 필터링", "filter(), between()", "분석에 포함할 환자 범위를 어떻게 정의할 것인가?"],
+        ["결측 표시", "is.na(), mutate()", "값이 비어 있는 이유는 무엇이며, 몇 건이나 되는가?"],
+        ["이상값 판정(통계)", "quantile(), IQR()", "분포에서 멀리 떨어진 값은 몇 건이며 어떤 특성을 갖는가?"],
+        ["이상값 판정(업무규칙)", "비교 연산자(<, >)", "통계와 무관하게 '있을 수 없는 값'은 몇 건인가?"]
+      ],
+      source: "hospital |> filter(age >= 18) |> select(age, wait_min)\n\nhospital |> mutate(wait_missing = is.na(wait_min)) |>\n  select(wait_min, wait_missing)\n\nhospital |> mutate(\n  charge_outlier = charge > quantile(charge, .75, na.rm = TRUE) +\n    1.5 * IQR(charge, na.rm = TRUE)\n) |> count(charge_outlier)",
+      output: "> hospital |> filter(age >= 18) |> select(age, wait_min)\n# A tibble: 1,200 × 2\n     age wait_min\n   <int>    <dbl>\n 1    44       13\n 2    32       13\n 3    85       29\n 4    95       32\n 5    56       16\n 6    87       21\n 7    80       37\n 8    42       25\n 9    38       33\n10    21       17\n# ℹ 1,190 more rows\n\n> hospital |> mutate(wait_missing = is.na(wait_min)) |>\n+   select(wait_min, wait_missing)\n# A tibble: 1,200 × 2\n   wait_min wait_missing\n      <dbl> <lgl>       \n 1       13 FALSE       \n 2       13 FALSE       \n 3       29 FALSE       \n 4       32 FALSE       \n 5       16 FALSE       \n 6       21 FALSE       \n 7       37 FALSE       \n 8       25 FALSE       \n 9       33 FALSE       \n10       17 FALSE       \n# ℹ 1,190 more rows\n\n> hospital |> mutate(\n+   charge_outlier = charge > quantile(charge, .75, na.rm = TRUE) +\n+     1.5 * IQR(charge, na.rm = TRUE)\n+ ) |> count(charge_outlier)\n# A tibble: 3 × 2\n  charge_outlier     n\n  <lgl>          <int>\n1 FALSE            956\n2 TRUE             226\n3 NA                18",
+      explain: [
+        "filter(age >= 18)은 성인 환자만 남기는 조건입니다. hospital의 age는 이미 18~95세로만 만들어져 있어 1,200행이 그대로 유지되지만, 실제 데이터에서는 미성년자나 입력 오류 연령이 섞여 있을 수 있으므로 이런 방어적 필터를 습관적으로 넣어 둡니다.",
+        "is.na(wait_min)은 결측이면 TRUE, 값이 있으면 FALSE를 돌려줍니다. 이렇게 만든 wait_missing 같은 논리형 열을 '결측 플래그'라고 부르며, 결측을 바로 지우기 전에 어떤 행이 결측이었는지 추적할 수 있게 해 줍니다.",
+        "quantile(charge, .75, na.rm=TRUE) + 1.5*IQR(charge, na.rm=TRUE)는 사분위수 기반 이상값의 상한선입니다. count(charge_outlier)로 집계하면 전체 1,200명 중 226명이 이 상한선을 넘고, 18명은 charge가 결측이라 TRUE/FALSE를 판정할 수 없어 NA로 표시됩니다."
+      ],
+      note: "세 번째 결과의 NA 행(18명)은 '이상값이 아니다'가 아니라 '판정할 수 없다'는 뜻입니다. 결측을 0이나 FALSE로 임의 대체하면 이 구분이 사라지므로 주의해야 합니다."
+    },
+    {
+      id: "c4x1",
+      chapter: 4,
+      tab: "dplyr 핵심 동사",
+      badge: "추가",
+      title: "dplyr 핵심 동사 한 번에 훑어보기 — select·filter·mutate·arrange·group_by·summarise",
+      filename: "extra_dplyr_verbs.R",
+      meta: [
+        ["복습 동사", "select(), filter(), mutate(), arrange(), group_by(), summarise()"],
+        ["데이터", "제2장 hospital (1,200행)"]
+      ],
+      desc: "프로그램 4-1·4-2의 긴 파이프라인에 들어가기 전에, dplyr의 여섯 가지 핵심 동사를 hospital 데이터로 하나씩 다시 확인합니다. 이미 2~3장에서 다룬 내용이지만, 이번 장의 파이프라인은 이 동사들을 한 번에 여러 개 이어 쓰므로 각각의 동작을 다시 명확히 해 둡니다.",
+      source: "hospital |> select(patient_id, department, charge) |> head(3)\n\nhospital |> filter(department == \"내과\") |> nrow()\n\nhospital |> mutate(charge_10k = round(charge / 10000, 1)) |>\n  select(patient_id, charge, charge_10k) |> head(3)\n\nhospital |> arrange(desc(charge)) |>\n  select(patient_id, department, charge) |> head(3)\n\nhospital |> group_by(department) |>\n  summarise(mean_charge = round(mean(charge, na.rm = TRUE)),\n            n = n(), .groups = \"drop\")",
+      output: "> hospital |> select(patient_id, department, charge) |> head(3)\n# A tibble: 3 × 3\n  patient_id department charge\n  <chr>      <fct>       <dbl>\n1 P00001     외과        54400\n2 P00002     내과        52100\n3 P00003     내과       147100\n\n> hospital |> filter(department == \"내과\") |> nrow()\n[1] 469\n\n> hospital |> mutate(charge_10k = round(charge / 10000, 1)) |>\n+   select(patient_id, charge, charge_10k) |> head(3)\n# A tibble: 3 × 3\n  patient_id charge charge_10k\n  <chr>       <dbl>      <dbl>\n1 P00001      54400        5.4\n2 P00002      52100        5.2\n3 P00003     147100       14.7\n\n> hospital |> arrange(desc(charge)) |>\n+   select(patient_id, department, charge) |> head(3)\n# A tibble: 3 × 3\n  patient_id department  charge\n  <chr>      <fct>        <dbl>\n1 P00538     내과       2224400\n2 P01168     외과       2129500\n3 P01129     내과       2098200\n\n> hospital |> group_by(department) |>\n+   summarise(mean_charge = round(mean(charge, na.rm = TRUE)),\n+             n = n(), .groups = \"drop\")\n# A tibble: 4 × 3\n  department   mean_charge     n\n  <fct>              <dbl> <int>\n1 내과              379557   469\n2 소아청소년과      263813   194\n3 외과              322215   273\n4 정형외과          297997   264",
+      explain: [
+        "select()는 열을 고르고, filter()는 조건을 만족하는 행만 남기고, mutate()는 새 열을 추가합니다. 세 동사는 원본 hospital을 바꾸지 않고 매번 새로운 결과를 돌려줍니다.",
+        "arrange(desc(charge))는 진료비가 높은 순으로 정렬합니다. desc() 없이 arrange(charge)만 쓰면 낮은 금액부터 오름차순으로 정렬됩니다.",
+        "group_by(department) |> summarise(...)는 진료과별로 그룹을 나눈 뒤 각 그룹의 평균과 건수를 한 행씩 계산합니다. .groups = \"drop\"을 붙이면 계산이 끝난 뒤 그룹 정보가 남지 않아 이후 코드에서 혼란이 없습니다."
+      ],
+      note: "내과가 평균 진료비(379,557원)와 환자 수(469명) 모두 가장 많습니다. 이는 내과에 입원 환자가 상대적으로 많이 배정되도록 설계된 데이터이기 때문이며, 실제 병원 데이터에서도 진료과별 평균을 비교할 때는 입원·외래 비율을 함께 확인해야 합니다."
+    },
+    {
+      id: "c4x2",
+      chapter: 4,
+      tab: "파이프 비교",
+      badge: "추가",
+      title: "%>% 와 |> 비교 — 같은 결과, 다른 표기",
+      filename: "extra_pipe_compare.R",
+      meta: [
+        ["비교 대상", "%>% (magrittr) vs |> (base R 4.1+)"],
+        ["결론", "같은 데이터, 같은 결과 — 표기만 다름"]
+      ],
+      desc: "지금까지 모든 예제는 |>(네이티브 파이프)를 사용했습니다. 책이나 인터넷 자료에서는 %>%(매그리트 파이프)도 자주 보게 되므로, 같은 파이프라인을 두 방식으로 각각 작성해 결과가 똑같은지 확인합니다.",
+      source: "library(magrittr) # %>%를 쓰려면 필요\n\nresult_base <- hospital |>\n  filter(department == \"내과\") |>\n  summarise(mean_wait = round(mean(wait_min, na.rm = TRUE), 1))\n\nresult_magrittr <- hospital %>%\n  filter(department == \"내과\") %>%\n  summarise(mean_wait = round(mean(wait_min, na.rm = TRUE), 1))\n\nresult_base\nresult_magrittr\nidentical(result_base, result_magrittr)",
+      output: "> result_base\n# A tibble: 1 × 1\n  mean_wait\n      <dbl>\n1      26.2\n> result_magrittr\n# A tibble: 1 × 1\n  mean_wait\n      <dbl>\n1      26.2\n> identical(result_base, result_magrittr)\n[1] TRUE",
+      explain: [
+        "|>는 R 4.1부터 base R에 포함된 네이티브 파이프이고, %>%는 magrittr 패키지가 제공하는 파이프입니다. 'x |> f()'와 'x %>% f()'는 둘 다 'f(x)'를 뜻하는 같은 의미이며, 이번 코드처럼 결과가 완전히 identical(동일)합니다.",
+        "%>%를 쓰려면 library(magrittr)이나 library(tidyverse)로 패키지를 불러와야 하지만, |>는 별도 패키지 없이 base R만으로 바로 사용할 수 있습니다. 이 책은 이 때문에 |>를 기본으로 사용합니다.",
+        "두 파이프의 차이가 드러나는 대표적인 경우는 플레이스홀더 문법입니다. %>%는 '.'를 자리표시자로 쓸 수 있고(x %>% f(y, .)), |>는 익명함수나 _ 플레이스홀더(R 4.2+)로 비슷한 역할을 합니다. 이 책의 예제들은 이런 차이가 필요 없는 단순한 파이프라인만 사용합니다."
+      ],
+      note: "두 파이프를 섞어 쓰는 것은 문법적으로는 가능하지만, 하나의 스크립트나 프로젝트 안에서는 한 가지 표기로 통일하는 것이 가독성에 좋습니다."
+    },
+    {
+      id: "c4p1",
+      chapter: 4,
+      tab: "프로그램 4-1",
+      badge: "프로그램 4-1",
+      title: "원본을 보존하는 전처리 파이프라인",
+      filename: "program_4-1.R",
+      meta: [
+        ["핵심 함수", "mutate(), cut(), is.na(), filter(), between(), select()"],
+        ["다루는 주제", "결측 플래그 생성 · 나이대 구간화 · 원본 보존"]
+      ],
+      desc: "hospital 원본을 바꾸지 않고, 결측 플래그와 나이대 구간을 추가한 새 객체 cleaned를 만드는 전처리 파이프라인입니다. janitor::clean_names()는 열 이름을 snake_case로 통일해 주는 함수로, 이미 깔끔한 hospital에는 실질적인 변화가 없지만 외부에서 받은 데이터에는 거의 항상 필요하므로 습관적으로 포함합니다.",
+      source: "cleaned <- hospital |>\n  janitor::clean_names() |>\n  mutate(\n    age_group = cut(\n      age,\n      breaks = c(17, 39, 59, 79, Inf),\n      labels = c(\"18~39\", \"40~59\", \"60~79\", \"80+\")\n    ),\n    wait_missing = is.na(wait_min),\n    charge_missing = is.na(charge)\n  ) |>\n  filter(between(age, 18, 120)) |>\n  select(patient_id, visit_date, department, age, age_group,\n         wait_min, wait_missing, charge, charge_missing,\n         satisfaction, readmit30)\n\ncleaned\n\ncleaned |> summarise(across(everything(), ~ sum(is.na(.x))))",
+      output: "> cleaned\n# A tibble: 1,200 × 11\n   patient_id visit_date department   age age_group wait_min wait_missing  charge charge_missing\n   <chr>      <date>     <fct>      <int> <fct>        <dbl> <lgl>          <dbl> <lgl>         \n 1 P00001     2025-04-11 외과          44 40~59           13 FALSE          54400 FALSE         \n 2 P00002     2025-07-31 내과          32 18~39           13 FALSE          52100 FALSE         \n 3 P00003     2025-06-01 내과          85 80+             29 FALSE         147100 FALSE         \n 4 P00004     2025-01-11 외과          95 80+             32 FALSE        1423600 FALSE         \n 5 P00005     2025-04-05 내과          56 40~59           16 FALSE          34900 FALSE         \n 6 P00006     2025-11-13 외과          87 80+             21 FALSE        1696100 FALSE         \n 7 P00007     2025-10-07 내과          80 80+             37 FALSE         120400 FALSE         \n 8 P00008     2025-12-23 내과          42 40~59           25 FALSE         148500 FALSE         \n 9 P00009     2025-07-21 내과          38 18~39           33 FALSE          76800 FALSE         \n10 P00010     2025-04-30 내과          21 18~39           17 FALSE          23900 FALSE         \n# ℹ 1,190 more rows\n# ℹ 2 more variables: satisfaction <dbl>, readmit30 <fct>\n\n> cleaned |> summarise(across(everything(), ~ sum(is.na(.x))))\n# A tibble: 1 × 11\n  patient_id visit_date department   age age_group wait_min wait_missing charge charge_missing\n       <int>      <int>      <int> <int>     <int>    <int>        <int>  <int>          <int>\n1          0          0          0     0         0       30            0     18              0\n# ℹ 2 more variables: satisfaction <int>, readmit30 <int>",
+      explain: [
+        "janitor::clean_names()는 열 이름을 소문자와 밑줄(snake_case)로 통일합니다. hospital의 열 이름은 이미 patient_id, wait_min처럼 깔끔한 snake_case이므로 이번에는 실제 변화가 없지만, 외부 기관에서 받은 'Patient ID'나 'Wait.Min' 같은 열 이름이라면 이 한 줄로 즉시 정리됩니다.",
+        "cut(age, breaks=c(17,39,59,79,Inf), labels=...)는 연속형 나이를 18~39, 40~59, 60~79, 80+ 네 구간으로 나눕니다. breaks의 첫 값 17은 18세부터 포함시키기 위한 경계이며, cut()은 기본적으로 구간의 오른쪽 끝을 포함합니다.",
+        "wait_missing과 charge_missing은 is.na()로 만든 결측 플래그입니다. filter(between(age,18,120))으로 비정상 연령을 걸러내지만, hospital의 age는 이미 18~95세로만 만들어져 있어 실제로는 1,200행이 그대로 유지됩니다 — '지금 당장 걸러지는 행이 없다'와 '이 필터가 필요 없다'는 다른 뜻입니다.",
+        "마지막 summarise(across(everything(), ~ sum(is.na(.x))))는 11개 열 전체의 결측 개수를 한 번에 계산합니다. wait_missing과 charge_missing 열 자체는 TRUE/FALSE로 가득 차 있어 결측이 0개이고, 결측은 원래 열인 wait_min(30개)과 charge(18개)에만 남아 있습니다."
+      ],
+      note: "원본 hospital은 전혀 바뀌지 않았습니다 — 1,200행 그대로이며 NA도 그대로 남아 있습니다(wait_min 30개, charge 18개). cleaned는 결측을 '삭제'한 것이 아니라 결측 여부를 '표시'만 해 둔 새 객체이므로, 이후 분석에서 결측을 어떻게 처리할지는 분석 목적에 맞게 별도로 결정해야 합니다."
+    },
+    {
+      id: "c4p2",
+      chapter: 4,
+      tab: "프로그램 4-2",
+      badge: "프로그램 4-2",
+      title: "IQR과 업무 규칙을 함께 사용한 이상값 검토",
+      filename: "program_4-2.R",
+      meta: [
+        ["핵심 함수", "quantile(), IQR(), mutate(), filter(), select()"],
+        ["다루는 주제", "통계적 이상값(statistical_outlier) vs 업무 규칙 위반(rule_violation)"]
+      ],
+      desc: "사분위수 기반 상·하한을 벗어나는 '통계적 이상값'과, 음수 진료비처럼 의료 업무상 있을 수 없는 '업무 규칙 위반'을 별도의 논리형 열로 각각 표시한 뒤, 둘 중 하나라도 TRUE인 행만 모아 검토 대상 목록을 만듭니다.",
+      source: "q <- quantile(hospital$charge, c(.25, .75), na.rm = TRUE)\niqr <- q[[2]] - q[[1]]\nlower <- q[[1]] - 1.5 * iqr\nupper <- q[[2]] + 1.5 * iqr\n\noutlier_review <- hospital |>\n  mutate(\n    statistical_outlier = charge < lower | charge > upper,\n    rule_violation = charge < 0 | wait_min < 0\n  ) |>\n  filter(statistical_outlier | rule_violation) |>\n  select(patient_id, department, admitted, los_days,\n         charge, statistical_outlier, rule_violation)\n\nq\nlower\nupper\noutlier_review\nnrow(outlier_review)",
+      output: "> q\n   25%    75% \n 58625 158925 \n> lower\n[1] -91825\n> upper\n[1] 309375\n> outlier_review\n# A tibble: 265 × 7\n   patient_id department admitted los_days  charge statistical_outlier rule_violation\n   <chr>      <fct>      <fct>       <int>   <dbl> <lgl>               <lgl>         \n 1 P00004     외과       입원            5 1423600 TRUE                FALSE         \n 2 P00006     외과       입원            7 1696100 TRUE                FALSE         \n 3 P00013     내과       입원            3 1227500 TRUE                FALSE         \n 4 P00016     내과       외래            0    -400 FALSE               TRUE          \n 5 P00024     내과       외래            0  -21300 FALSE               TRUE          \n 6 P00026     외과       입원            3 1174800 TRUE                FALSE         \n 7 P00029     외과       입원            2 1097200 TRUE                FALSE         \n 8 P00031     내과       외래            0   -9600 FALSE               TRUE          \n 9 P00035     정형외과   외래            0   -1400 FALSE               TRUE          \n10 P00036     내과       입원            8 1825700 TRUE                FALSE         \n# ℹ 255 more rows\n> nrow(outlier_review)\n[1] 265",
+      explain: [
+        "quantile(charge, c(.25,.75))로 1사분위수(58,625원)와 3사분위수(158,925원)를 구하고, IQR(=100,300원)의 1.5배를 양쪽 경계로 더하고 빼서 하한(-91,825원)과 상한(309,375원)을 계산합니다. 이 범위를 벗어나면 statistical_outlier가 TRUE가 됩니다.",
+        "rule_violation은 통계와 무관하게 '진료비가 음수'이거나 '대기시간이 음수'인, 업무상 절대 있을 수 없는 값을 찾습니다. 이번 데이터에는 음수 대기시간은 없지만 음수 진료비가 존재해 rule_violation이 TRUE가 되는 행이 있습니다.",
+        "filter(statistical_outlier | rule_violation)은 두 조건 중 하나라도 TRUE면 행을 남깁니다. 265명이 검토 대상으로 추려졌고, 이 중 226명은 입원(admitted==\"입원\") 환자입니다 — 고액 진료비 이상값이 실제로는 입원·장기 재원 때문일 수 있다는 것을 바로 확인할 수 있습니다."
+      ],
+      note: "하한(-91,825원)보다 작은 값은 없었습니다 — 하한을 벗어난 사례는 모두 rule_violation(음수 진료비)으로 잡힌 것입니다. 또한 10명은 wait_min이 결측이라 rule_violation이 TRUE/FALSE가 아닌 NA로 표시됩니다(NA | FALSE는 NA). 이 행들은 charge 기준으로 이미 statistical_outlier가 TRUE라 목록에는 포함되지만, rule_violation 열의 NA는 '위반 아님'이 아니라 '판정 불가'이므로 섣불리 FALSE로 바꾸면 안 됩니다."
+    },
+    {
+      id: "c4x3",
+      chapter: 4,
+      tab: "Z-점수 이상값",
+      badge: "추가",
+      title: "Z-점수 기반 이상값 탐지 — IQR과 비교하기",
+      filename: "extra_zscore.R",
+      meta: [
+        ["핵심 함수", "mean(), sd(), mutate(), abs()"],
+        ["비교", "같은 charge 열을 IQR과 다른 기준으로 재검토"]
+      ],
+      desc: "프로그램 4-2에서 사용한 IQR 방법과 달리, 평균과 표준편차를 기준으로 '평균에서 몇 표준편차 떨어져 있는가(Z-점수)'로 이상값을 찾는 방법입니다. 같은 charge 열에 두 방법을 각각 적용해 결과가 왜 다른지 비교합니다.",
+      source: "charge_mean <- mean(hospital$charge, na.rm = TRUE)\ncharge_sd <- sd(hospital$charge, na.rm = TRUE)\n\nz_outliers <- hospital |>\n  mutate(z_charge = round((charge - charge_mean) / charge_sd, 2)) |>\n  filter(abs(z_charge) > 3) |>\n  select(patient_id, department, admitted, charge, z_charge)\n\ncharge_mean\ncharge_sd\nz_outliers\nnrow(z_outliers)",
+      output: "> charge_mean\n[1] 329805.6\n> charge_sd\n[1] 521656.9\n> z_outliers\n# A tibble: 11 × 5\n   patient_id department admitted  charge z_charge\n   <chr>      <fct>      <fct>      <dbl>    <dbl>\n 1 P00040     외과       입원     2042600     3.28\n 2 P00255     내과       입원     1920400     3.05\n 3 P00335     외과       입원     1950600     3.11\n 4 P00357     외과       입원     1942600     3.09\n 5 P00444     내과       입원     2065600     3.33\n 6 P00524     내과       입원     1906900     3.02\n 7 P00538     내과       입원     2224400     3.63\n 8 P00759     내과       입원     2052600     3.3 \n 9 P01129     내과       입원     2098200     3.39\n10 P01131     내과       입원     1997600     3.2 \n11 P01168     외과       입원     2129500     3.45\n> nrow(z_outliers)\n[1] 11",
+      explain: [
+        "charge_mean(329,805.6)과 charge_sd(521,656.9)를 이용해 각 환자의 charge가 평균에서 몇 표준편차 떨어져 있는지를 z_charge로 계산합니다. 통계학에서는 흔히 |z| > 3을 극단값 기준으로 사용합니다.",
+        "filter(abs(z_charge) > 3)으로 걸러내면 11명만 남습니다. 프로그램 4-2의 IQR 방법이 찾은 226명보다 훨씬 적은데, charge 분포가 오른쪽으로 크게 치우쳐 있어 평균과 표준편차 자체가 큰 값들의 영향을 많이 받기 때문입니다.",
+        "이 11명은 모두 IQR 상한도 함께 넘는 입원 환자입니다. 즉 Z-점수 방법이 틀린 것이 아니라, 왜곡된 분포에서는 평균·표준편차 기반 기준이 더 보수적으로(적게) 이상값을 잡는다는 특성을 보여 줍니다."
+      ],
+      note: "실무에서는 한 가지 방법만 쓰기보다 IQR과 Z-점수처럼 서로 다른 기준을 함께 살펴보는 것이 안전합니다. 두 결과가 크게 다르면 그 차이 자체가 '분포가 비대칭이다'라는 중요한 정보입니다."
+    },
+    {
+      id: "c4m1",
+      chapter: 4,
+      tab: "미니실습 4-1",
+      badge: "미니실습 4-1",
+      title: "대기시간 결측률을 진료과별로 비교하기",
+      filename: "mini_4-1.R",
+      meta: [
+        ["문제", "대기시간 결측률을 진료과별로 비교하시오"],
+        ["채점 기준", "그룹 2점, 분자 2점, 분모 2점, 비율 2점, 원인 해석 2점"]
+      ],
+      desc: "진료과마다 결측률이 다른지, group_by()와 summarise()로 분모(전체 환자 수)와 분자(결측 환자 수)를 각각 구해 비율로 비교하는 모범답안입니다.",
+      source: "missing_by_dept <- hospital |>\n  group_by(department) |>\n  summarise(\n    n = n(),\n    missing_wait = sum(is.na(wait_min)),\n    missing_rate = missing_wait / n,\n    .groups = \"drop\"\n  )\n\nmissing_by_dept",
+      output: "> missing_by_dept\n# A tibble: 4 × 4\n  department       n missing_wait missing_rate\n  <fct>        <int>        <int>        <dbl>\n1 내과           469           11       0.0235\n2 소아청소년과   194            4       0.0206\n3 외과           273            5       0.0183\n4 정형외과       264           10       0.0379",
+      explain: [
+        "n()은 그룹별 전체 행 수(분모), sum(is.na(wait_min))은 그룹별 결측 건수(분자)입니다. missing_rate = missing_wait / n으로 비율을 구하면 진료과 간 결측 '건수'가 아니라 결측 '비율'을 공정하게 비교할 수 있습니다.",
+        "정형외과가 3.79%로 결측률이 가장 높고, 외과가 1.83%로 가장 낮습니다. 환자 수(n)가 가장 많은 내과(469명)의 결측률(2.35%)은 중간 수준입니다 — 환자 수가 많다고 결측률도 높은 것은 아닙니다."
+      ],
+      note: "흔한 오답: mean(wait_min, na.rm=TRUE)는 결측을 제외한 '대기시간의 평균'이지 결측률이 아닙니다. 결측률 차이는 진료과별 기록 과정의 차이를 시사할 수 있으므로, 단순히 평균으로 대체하기 전에 왜 그 과에서 결측이 더 많은지 먼저 확인해야 합니다."
+    },
+    {
+      id: "c4m2",
+      chapter: 4,
+      tab: "미니실습 4-2",
+      badge: "미니실습 4-2",
+      title: "통계적 이상값 중 입원 환자 비율 계산하기",
+      filename: "mini_4-2.R",
+      meta: [
+        ["문제", "통계적 이상값 중 입원 환자의 비율을 계산하고 자동 삭제가 부적절한 이유를 설명하시오"],
+        ["채점 기준", "IQR 3점, 필터 2점, 비율 2점, 자동삭제 위험 3점"]
+      ],
+      desc: "프로그램 4-2에서 구한 IQR 상한을 넘는 환자만 추려 입원 비율을 계산하는 모범답안입니다. 비율이 어떻게 나오는지에 따라 왜 이상값을 자동으로 삭제하면 안 되는지를 데이터로 설명합니다.",
+      source: "q <- quantile(hospital$charge, c(.25, .75), na.rm = TRUE)\niqr <- q[2] - q[1]\n\nflagged <- hospital |>\n  mutate(outlier = charge > q[2] + 1.5 * iqr) |>\n  filter(outlier)\n\nnrow(flagged)\nmean(flagged$admitted == \"입원\", na.rm = TRUE)",
+      output: "> nrow(flagged)\n[1] 226\n> mean(flagged$admitted == \"입원\", na.rm = TRUE)\n[1] 1",
+      explain: [
+        "q[2] + 1.5*iqr은 프로그램 4-2와 같은 상한선입니다. filter(outlier)로 이 상한선을 넘는 226명만 남긴 뒤, mean(flagged$admitted == \"입원\")으로 그중 입원 환자의 비율을 구합니다.",
+        "결과는 정확히 1(100%)입니다 — 고액 진료비로 걸러진 226명 전원이 입원 환자였습니다. hospital 데이터에서 진료비는 입원 여부와 재원일수(los_days)에 크게 좌우되도록 설계되어 있어, 고액 진료비 이상값은 통계적으로는 극단값이지만 의료적으로는 '입원·장기 재원'이라는 합리적인 이유가 있는 실제 값일 가능성이 높습니다."
+      ],
+      note: "흔한 오답: '상자그림 밖의 점이니 오류다'로 단정하고 바로 삭제하는 것입니다. 이번 결과처럼 이상값 전원이 입원 환자라면, 그 값들을 지우는 순간 입원 진료비 분석 자체가 불가능해집니다. 통계적 이상값은 삭제 대상이 아니라 '원자료 또는 담당 부서에 확인해야 할 대상'으로 다루어야 합니다."
+    }
+  ];
+
+  var CHAPTERS = [
+    {
+      id: 1,
+      label: "제1장",
+      eyebrow: "제1장 통합 R 실습 · 보건의료 데이터 분석",
+      sub: "왼쪽 콘솔의 코드를 보고 오른쪽 입력창에 똑같이 입력해 보세요. 한 글자도 틀리지 않으면 복사 버튼이 켜집니다."
+    },
+    {
+      id: 2,
+      label: "제2장",
+      eyebrow: "제2장 통합 R 실습 · 보건의료 데이터 분석",
+      sub: "공통 데이터 생성부터 자료형·NA 처리 실습까지, 왼쪽 코드를 보고 오른쪽에 똑같이 입력해 보세요."
+    },
+    {
+      id: 3,
+      label: "제3장",
+      eyebrow: "제3장 통합 R 실습 · 벡터에서 데이터프레임까지",
+      sub: "벡터·행렬·리스트·팩터·데이터프레임·티블까지, 왼쪽 코드를 보고 오른쪽에 똑같이 입력해 보세요."
+    },
+    {
+      id: 4,
+      label: "제4장",
+      eyebrow: "제4장 통합 R 실습 · 전처리와 이상값 탐지",
+      sub: "결측 플래그 만들기부터 IQR·Z-점수 기반 이상값 탐지까지, 왼쪽 코드를 보고 오른쪽에 똑같이 입력해 보세요."
+    }
+  ];
+
+  var STORE_KEY = "r-typing-lab-v1";
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) { return {}; }
+  }
+  function saveState(state) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+  var state = loadState();
+
+  function escapeHtml(ch) {
+    if (ch === "&") return "&amp;";
+    if (ch === "<") return "&lt;";
+    if (ch === ">") return "&gt;";
+    return ch;
+  }
+  function escapeHtmlStr(s) {
+    var out = "";
+    for (var i = 0; i < s.length; i++) out += escapeHtml(s[i]);
+    return out;
+  }
+
+  // ---- light R syntax highlighter for the read-only source panel ----
+  function highlightR(source) {
+    var lines = source.split("\n");
+    var kw = /\b(TRUE|FALSE|NA|if|else|function|for|while|repeat|break|next|library|install\.packages)\b/;
+    return lines.map(function (line) {
+      var out = "";
+      var i = 0;
+      while (i < line.length) {
+        var rest = line.slice(i);
+        var cm = rest.match(/^#.*/);
+        var str = rest.match(/^"([^"\\]|\\.)*"/);
+        var num = rest.match(/^\b\d+(\.\d+)?\b/);
+        var op = rest.match(/^(<-|\|>|::|~)/);
+        var fn = rest.match(/^[A-Za-z_.][A-Za-z0-9_.]*(?=\s*\()/);
+        var kwm = rest.match(/^(TRUE|FALSE|NA|if|else|function|for|while|repeat|break|next)\b/);
+        if (cm) { out += '<span class="tok-com">' + escapeHtmlStr(cm[0]) + "</span>"; i += cm[0].length; }
+        else if (str) { out += '<span class="tok-str">' + escapeHtmlStr(str[0]) + "</span>"; i += str[0].length; }
+        else if (kwm) { out += '<span class="tok-kw">' + escapeHtmlStr(kwm[0]) + "</span>"; i += kwm[0].length; }
+        else if (fn) { out += '<span class="tok-fn">' + escapeHtmlStr(fn[0]) + "</span>"; i += fn[0].length; }
+        else if (num) { out += '<span class="tok-num">' + escapeHtmlStr(num[0]) + "</span>"; i += num[0].length; }
+        else if (op) { out += '<span class="tok-op">' + escapeHtmlStr(op[0]) + "</span>"; i += op[0].length; }
+        else { out += escapeHtml(line[i]); i += 1; }
+      }
+      return out;
+    }).join("\n");
+  }
+
+  // characters that need a Hanja/symbol-conversion step on a Korean keyboard
+  // (e.g. "·" is typed as ㄱ + 한자 key), so a click-to-insert button avoids blocking students
+  var HARD_CHARS = [
+    { ch: "·", label: "가운뎃점 · (ㄱ + 한자)" },
+    { ch: "×", label: "곱셈기호 × (ㅌ + 한자)" },
+    { ch: "→", label: "화살표 →" },
+    { ch: "…", label: "말줄임표 …" }
+  ];
+  function hardCharsIn(source) {
+    return HARD_CHARS.filter(function (h) { return source.indexOf(h.ch) !== -1; });
+  }
+
+  function lineOf(text, index) {
+    var n = 1;
+    for (var i = 0; i < index && i < text.length; i++) if (text[i] === "\n") n++;
+    return n;
+  }
+
+  var tabsEl = document.getElementById("tabs");
+  var mainEl = document.getElementById("app-main");
+  var toastEl = document.getElementById("toast");
+  var chapterSwitchEl = document.getElementById("chapterSwitch");
+  var brandEyebrowEl = document.getElementById("brandEyebrow");
+  var brandSubEl = document.getElementById("brandSub");
+  var progressCountEl = document.getElementById("progress-count");
+  var progressTotalEl = document.getElementById("progress-total");
+  var toastTimer = null;
+  var currentChapter = CHAPTERS[0].id;
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 1600);
+  }
+
+  // ---------- Admin mode ----------
+  // 로그인하면 정답 일치 여부와 관계없이 복사 버튼이 켜지고, 입력창에 붙여넣기도 허용됩니다.
+  // 공개 저장소에 올라가므로 아이디·비밀번호 원문 대신 SHA-256("아이디:비밀번호") 값만 둡니다.
+  // 비밀번호를 바꾸려면 새 "아이디:비밀번호"의 SHA-256 값을 아래에 넣으세요.
+  // 학생 화면과 작성자 화면을 구분하는 가벼운 잠금장치입니다.
+  var ADMIN_HASH = "cc4be216d5a64ee0b49a1a2d822b0b6ade16b11904b18b232afe48d7513bf4aa";
+  var ADMIN_KEY = "r-typing-lab-admin-v1";
+  var isAdmin = false;
+  try { isAdmin = localStorage.getItem(ADMIN_KEY) === "1"; } catch (e) {}
+  var allRenders = [];
+
+  var adminToggleBtn = document.getElementById("adminToggleBtn");
+  var adminOverlay = document.getElementById("adminOverlay");
+  var adminUserInput = document.getElementById("adminUser");
+  var adminPassInput = document.getElementById("adminPass");
+  var adminErrorEl = document.getElementById("adminError");
+  var adminSubmitBtn = document.getElementById("adminSubmitBtn");
+  var adminCancelBtn = document.getElementById("adminCancelBtn");
+
+  function updateAdminUI() {
+    document.body.classList.toggle("is-admin", isAdmin);
+    if (isAdmin) {
+      adminToggleBtn.textContent = "관리자 모드 ✓ (로그아웃)";
+      adminToggleBtn.classList.add("on");
+    } else {
+      adminToggleBtn.textContent = "관리자 로그인";
+      adminToggleBtn.classList.remove("on");
+    }
+  }
+
+  function setAdmin(v) {
+    isAdmin = v;
+    try {
+      if (v) localStorage.setItem(ADMIN_KEY, "1");
+      else localStorage.removeItem(ADMIN_KEY);
+    } catch (e) {}
+    updateAdminUI();
+    allRenders.forEach(function (fn) { fn(); });
+  }
+
+  function openAdminModal() {
+    adminErrorEl.textContent = "";
+    adminUserInput.value = "";
+    adminPassInput.value = "";
+    adminOverlay.hidden = false;
+    adminUserInput.focus();
+  }
+  function closeAdminModal() { adminOverlay.hidden = true; }
+
+  function sha256Hex(text) {
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)).then(function (buf) {
+      return Array.prototype.map.call(new Uint8Array(buf), function (b) {
+        return ("0" + b.toString(16)).slice(-2);
+      }).join("");
+    });
+  }
+
+  function attemptAdminLogin() {
+    if (!window.crypto || !crypto.subtle) {
+      adminErrorEl.textContent = "이 브라우저 환경에서는 로그인할 수 없습니다. https 주소로 접속해 주세요.";
+      return;
+    }
+    sha256Hex(adminUserInput.value + ":" + adminPassInput.value).then(function (hex) {
+      if (hex === ADMIN_HASH) {
+        setAdmin(true);
+        closeAdminModal();
+        showToast("관리자 모드로 전환되었습니다");
+      } else {
+        adminErrorEl.textContent = "아이디 또는 비밀번호가 올바르지 않습니다.";
+      }
+    });
+  }
+
+  adminToggleBtn.addEventListener("click", function () {
+    if (isAdmin) {
+      setAdmin(false);
+      showToast("관리자 모드를 해제했습니다");
+    } else {
+      openAdminModal();
+    }
+  });
+  adminCancelBtn.addEventListener("click", closeAdminModal);
+  adminOverlay.addEventListener("click", function (e) { if (e.target === adminOverlay) closeAdminModal(); });
+  adminSubmitBtn.addEventListener("click", attemptAdminLogin);
+  adminUserInput.addEventListener("keydown", function (e) { if (e.key === "Enter") attemptAdminLogin(); });
+  adminPassInput.addEventListener("keydown", function (e) { if (e.key === "Enter") attemptAdminLogin(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !adminOverlay.hidden) closeAdminModal();
+  });
+
+  updateAdminUI();
+
+  function exercisesOf(chapterId) {
+    return EXERCISES.filter(function (ex) { return ex.chapter === chapterId; });
+  }
+
+  function updateProgressCount() {
+    var list = exercisesOf(currentChapter);
+    var n = 0;
+    list.forEach(function (ex) { if (state[ex.id] && state[ex.id].done) n++; });
+    progressCountEl.textContent = String(n);
+    progressTotalEl.textContent = String(list.length);
+  }
+
+  function buildChapterSwitch() {
+    CHAPTERS.forEach(function (ch) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "chapter-btn" + (ch.id === currentChapter ? " active" : "");
+      btn.textContent = ch.label;
+      btn.dataset.chapter = ch.id;
+      btn.addEventListener("click", function () { switchChapter(ch.id); });
+      chapterSwitchEl.appendChild(btn);
+    });
+  }
+
+  function switchChapter(chapterId) {
+    if (chapterId === currentChapter) return;
+    currentChapter = chapterId;
+    var ch = CHAPTERS.filter(function (c) { return c.id === chapterId; })[0];
+    brandEyebrowEl.textContent = ch.eyebrow;
+    brandSubEl.textContent = ch.sub;
+    Array.prototype.forEach.call(chapterSwitchEl.querySelectorAll(".chapter-btn"), function (b) {
+      b.classList.toggle("active", Number(b.dataset.chapter) === chapterId);
+    });
+    buildTabs();
+    var first = exercisesOf(chapterId)[0];
+    if (first) activate(first.id);
+    updateProgressCount();
+  }
+
+  function buildTabs() {
+    tabsEl.innerHTML = "";
+    exercisesOf(currentChapter).forEach(function (ex, idx) {
+      var btn = document.createElement("button");
+      btn.className = "tab-btn" + (idx === 0 ? " active" : "");
+      btn.type = "button";
+      btn.dataset.id = ex.id;
+      btn.innerHTML = ex.tab + (state[ex.id] && state[ex.id].done ? ' <span class="tab-check">✓</span>' : "");
+      btn.addEventListener("click", function () { activate(ex.id); });
+      tabsEl.appendChild(btn);
+    });
+  }
+
+  function refreshTabCheck(id) {
+    var btn = tabsEl.querySelector('.tab-btn[data-id="' + id + '"]');
+    if (!btn) return;
+    var ex = EXERCISES.filter(function (e) { return e.id === id; })[0];
+    btn.innerHTML = ex.tab + (state[id] && state[id].done ? ' <span class="tab-check">✓</span>' : "");
+  }
+
+  function activate(id) {
+    Array.prototype.forEach.call(tabsEl.querySelectorAll(".tab-btn"), function (b) {
+      b.classList.toggle("active", b.dataset.id === id);
+    });
+    Array.prototype.forEach.call(mainEl.querySelectorAll(".exercise"), function (s) {
+      s.hidden = s.dataset.id !== id;
+    });
+  }
+
+  function buildExercise(ex) {
+    var section = document.createElement("section");
+    section.className = "exercise";
+    section.dataset.id = ex.id;
+    section.hidden = true;
+
+    var metaHtml = ex.meta.map(function (m) {
+      return '<div><dt>' + m[0] + '</dt><dd>' + escapeHtmlStr(m[1]) + '</dd></div>';
+    }).join("");
+
+    var designTableHtml = "";
+    if (ex.designTable) {
+      var dtHead = ex.designTable[0];
+      var dtRows = ex.designTable.slice(1);
+      designTableHtml =
+        '<div class="design-table-wrap"><table class="design-table"><thead><tr>' +
+          dtHead.map(function (h) { return '<th>' + escapeHtmlStr(h) + '</th>'; }).join("") +
+          '</tr></thead><tbody>' +
+          dtRows.map(function (r) {
+            return '<tr>' + r.map(function (c) { return '<td>' + escapeHtmlStr(c) + '</td>'; }).join("") + '</tr>';
+          }).join("") +
+          '</tbody></table></div>';
+    }
+
+    var explainHtml = "";
+    if (ex.explain && ex.explain.length) {
+      explainHtml =
+        '<div class="explain-card">' +
+          '<div class="explain-head"><b>설명문</b><span>핵심 개념 풀이</span></div>' +
+          '<div class="explain-body">' + ex.explain.map(function (p) { return '<p>' + escapeHtmlStr(p) + '</p>'; }).join("") + '</div>' +
+        '</div>';
+    }
+
+    var hardChars = hardCharsIn(ex.source);
+    var toolbarHtml = "";
+    var toolbarSpacerHtml = "";
+    if (hardChars.length) {
+      var btns = hardChars.map(function (h) {
+        return '<button type="button" class="char-btn" data-char="' + escapeHtmlStr(h.ch) + '" title="' + escapeHtmlStr(h.label) + '">' + escapeHtmlStr(h.ch) + '</button>';
+      }).join("");
+      toolbarHtml =
+        '<div class="char-toolbar">' +
+          '<span class="ct-label">키보드로 바로 안 되는 문자</span>' + btns +
+          '<span class="ct-tip">버튼을 누르면 커서 위치에 바로 입력됩니다</span>' +
+        '</div>';
+      // invisible spacer so the source panel lines up with the typing panel's extra toolbar row
+      toolbarSpacerHtml = '<div class="char-toolbar" style="visibility:hidden" aria-hidden="true">' +
+        '<span class="ct-label">&nbsp;</span><button type="button" class="char-btn" tabindex="-1">&nbsp;</button></div>';
+    }
+
+    // size the code area to fit this exercise's full line count, so typing never needs an inner scroll
+    var lineCount = ex.source.split("\n").length;
+    var bodyHeight = Math.max(200, Math.round(lineCount * 22.3) + 34);
+
+    section.innerHTML =
+      '<div class="ex-head">' +
+        '<span class="ex-badge">' + ex.badge + '</span>' +
+        '<h2 class="ex-title">' + ex.title + '</h2>' +
+        '<div class="ex-meta">' + metaHtml + '</div>' +
+        '<p class="ex-desc">' + ex.desc + '</p>' +
+        designTableHtml +
+      '</div>' +
+      '<div class="code-grid">' +
+        '<div class="code-card">' +
+          '<div class="card-bar"><div class="traffic"><span></span><span></span><span></span></div>' +
+            '<span class="card-filename">' + ex.filename + '</span>' +
+            '<button type="button" class="source-copy-btn admin-only" data-role="source-copy">소스 복사</button>' +
+            '<span class="card-tag">원본 소스</span></div>' +
+          toolbarSpacerHtml +
+          '<div class="card-body" style="height:' + bodyHeight + 'px"><pre class="src-code">' + highlightR(ex.source) + '</pre></div>' +
+        '</div>' +
+        '<div class="code-card typing">' +
+          '<div class="card-bar"><div class="traffic"><span></span><span></span><span></span></div>' +
+            '<span class="card-filename">내 입력</span><span class="status-pill" data-role="status">대기 중</span></div>' +
+          toolbarHtml +
+          '<div class="card-body" style="height:' + bodyHeight + 'px"><div class="type-wrap">' +
+            '<div class="type-highlight" data-role="highlight" aria-hidden="true"></div>' +
+            '<textarea class="type-input" data-role="input" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" placeholder="여기에 왼쪽 코드를 그대로 입력하세요..."></textarea>' +
+          '</div></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="progress-row">' +
+        '<div class="progress-track"><div class="progress-fill" data-role="bar"></div></div>' +
+        '<div class="progress-text" data-role="progress-text">0 / ' + ex.source.length + '자</div>' +
+        '<div class="btn-group">' +
+          '<button type="button" class="btn" data-role="reset">초기화</button>' +
+          '<button type="button" class="btn btn-copy" data-role="copy" disabled>복사</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="hint-line" data-role="hint"></div>' +
+      '<div class="result-card">' +
+        '<div class="result-head"><b>실행 결과</b><span>RStudio 콘솔 예상 출력 · 참고용</span></div>' +
+        '<pre class="output-code">' + escapeHtmlStr(ex.output) + '</pre>' +
+        (ex.outputImage ?
+          '<div class="result-plot"><img src="' + ex.outputImage + '" alt="' + escapeHtmlStr(ex.title) + ' 그래프" loading="lazy">' +
+            '<div class="plot-caption">RStudio Plots 탭 실제 실행 화면</div></div>'
+          : '') +
+        (ex.note ? '<div class="result-note">' + escapeHtmlStr(ex.note) + '</div>' : '') +
+      '</div>' +
+      explainHtml;
+
+    mainEl.appendChild(section);
+    wireExercise(ex, section);
+  }
+
+  function wireExercise(ex, section) {
+    var input = section.querySelector('[data-role="input"]');
+    var highlight = section.querySelector('[data-role="highlight"]');
+    var bar = section.querySelector('[data-role="bar"]');
+    var progressText = section.querySelector('[data-role="progress-text"]');
+    var statusPill = section.querySelector('[data-role="status"]');
+    var copyBtn = section.querySelector('[data-role="copy"]');
+    var sourceCopyBtn = section.querySelector('[data-role="source-copy"]');
+    var resetBtn = section.querySelector('[data-role="reset"]');
+    var hintLine = section.querySelector('[data-role="hint"]');
+    var source = ex.source;
+
+    // once everything typed so far is correct, immediately fill in the run of
+    // spaces/tabs/newlines (and next line's indentation) that comes next in the
+    // source, so students only have to type letters, numbers, symbols and words —
+    // never guess how many spaces or blank lines separate them.
+    function autoFillWhitespace() {
+      if (input.selectionStart !== input.value.length || input.selectionEnd !== input.value.length) return;
+      var typed = input.value;
+      var i = 0;
+      while (i < typed.length && i < source.length && typed[i] === source[i]) i++;
+      if (i !== typed.length) return;
+      var j = i;
+      while (j < source.length && (source[j] === " " || source[j] === "\t" || source[j] === "\n")) j++;
+      if (j > i) {
+        input.value = typed + source.slice(i, j);
+        input.selectionStart = input.selectionEnd = input.value.length;
+      }
+    }
+
+    function render() {
+      var typed = input.value;
+      var len = Math.min(typed.length, source.length) + (typed.length > source.length ? typed.length - source.length : 0);
+      var html = "";
+      var correct = 0;
+      var firstBad = -1;
+      var max = Math.max(typed.length, 0);
+      for (var i = 0; i < max; i++) {
+        var tc = typed[i];
+        var sc = source[i];
+        if (sc !== undefined && tc === sc) {
+          correct++;
+          html += '<span class="ok">' + escapeHtml(tc) + "</span>";
+        } else {
+          if (firstBad === -1) firstBad = i;
+          html += '<span class="bad">' + escapeHtml(tc) + "</span>";
+        }
+      }
+      highlight.innerHTML = html;
+
+      var pct = source.length ? Math.min(100, (correct / source.length) * 100) : 0;
+      bar.style.width = pct + "%";
+
+      var isMatch = typed === source || typed === source + "\n";
+
+      if (typed.length === 0) {
+        bar.className = "progress-fill";
+        statusPill.textContent = "대기 중";
+        statusPill.className = "status-pill";
+        hintLine.textContent = "";
+      } else if (isMatch) {
+        bar.className = "progress-fill ok";
+        statusPill.textContent = "일치";
+        statusPill.className = "status-pill ok";
+        hintLine.textContent = "";
+      } else if (firstBad === -1) {
+        bar.className = "progress-fill";
+        statusPill.textContent = "입력 중";
+        statusPill.className = "status-pill";
+        hintLine.textContent = "";
+      } else {
+        bar.className = "progress-fill err";
+        statusPill.textContent = "확인 필요";
+        statusPill.className = "status-pill err";
+        hintLine.textContent = lineOf(source, firstBad) + "번째 줄 부근의 글자·기호를 다시 확인하세요.";
+      }
+
+      progressText.textContent = Math.min(typed.length, source.length) + " / " + source.length + "자";
+
+      var copyAllowed = isMatch || isAdmin;
+      copyBtn.disabled = !copyAllowed;
+      copyBtn.className = "btn btn-copy" + (copyAllowed ? " enabled" : "");
+      if (!isMatch) copyBtn.textContent = "복사";
+
+      state[ex.id] = state[ex.id] || {};
+      state[ex.id].draft = typed;
+      if (isMatch && !state[ex.id].done) {
+        state[ex.id].done = true;
+        saveState(state);
+        refreshTabCheck(ex.id);
+        updateProgressCount();
+      } else if (!isMatch && state[ex.id].done) {
+        // keep completion once achieved; just persist draft
+        saveState(state);
+      } else {
+        saveState(state);
+      }
+    }
+
+    allRenders.push(render);
+
+    input.addEventListener("input", function () {
+      autoFillWhitespace();
+      render();
+    });
+    input.addEventListener("scroll", function () {
+      highlight.scrollTop = input.scrollTop;
+      highlight.scrollLeft = input.scrollLeft;
+    });
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Tab") {
+        e.preventDefault();
+        showToast("들여쓰기와 띄어쓰기는 자동으로 입력됩니다");
+        return;
+      }
+      // spacing is auto-filled the instant the preceding text is correct, so if a
+      // student still presses space/enter out of habit, swallow it instead of
+      // letting it duplicate the whitespace that is already there
+      if ((e.key === " " || e.key === "Enter") && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        var typed = input.value;
+        var atEnd = input.selectionStart === typed.length && input.selectionEnd === typed.length;
+        var i = 0;
+        while (i < typed.length && i < source.length && typed[i] === source[i]) i++;
+        var prefixOk = atEnd && i === typed.length;
+        var nextChar = source[typed.length];
+        var nextIsWhitespace = nextChar === " " || nextChar === "\t" || nextChar === "\n";
+        if (prefixOk && !nextIsWhitespace) {
+          e.preventDefault();
+        }
+      }
+    });
+    input.addEventListener("paste", function (e) {
+      if (isAdmin) return; // 관리자 모드에서는 붙여넣기를 허용합니다
+      e.preventDefault();
+      showToast("붙여넣기 대신 직접 입력해 보세요");
+    });
+
+    Array.prototype.forEach.call(section.querySelectorAll(".char-btn"), function (btn) {
+      btn.addEventListener("click", function () {
+        var ch = btn.dataset.char;
+        var start = input.selectionStart, end = input.selectionEnd;
+        input.focus();
+        input.value = input.value.slice(0, start) + ch + input.value.slice(end);
+        input.selectionStart = input.selectionEnd = start + ch.length;
+        autoFillWhitespace();
+        render();
+      });
+    });
+
+    resetBtn.addEventListener("click", function () {
+      input.value = "";
+      input.focus();
+      render();
+    });
+
+    copyBtn.addEventListener("click", function () {
+      if (copyBtn.disabled) return;
+      var text = source;
+      function done() {
+        copyBtn.textContent = "복사됨 ✓";
+        copyBtn.classList.add("copied");
+        showToast("코드가 복사되었습니다");
+        setTimeout(function () {
+          copyBtn.textContent = "복사";
+          copyBtn.classList.remove("copied");
+        }, 1400);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text, done); });
+      } else {
+        fallbackCopy(text, done);
+      }
+    });
+
+    if (sourceCopyBtn) {
+      sourceCopyBtn.addEventListener("click", function () {
+        var text = source;
+        function done() {
+          sourceCopyBtn.textContent = "복사됨 ✓";
+          sourceCopyBtn.classList.add("copied");
+          showToast("원본 소스가 복사되었습니다");
+          setTimeout(function () {
+            sourceCopyBtn.textContent = "소스 복사";
+            sourceCopyBtn.classList.remove("copied");
+          }, 1400);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text, done); });
+        } else {
+          fallbackCopy(text, done);
+        }
+      });
+    }
+
+    function fallbackCopy(text, cb) {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta);
+      cb();
+    }
+
+    // restore draft
+    var saved = state[ex.id] && state[ex.id].draft;
+    if (saved) {
+      input.value = saved;
+      input.selectionStart = input.selectionEnd = saved.length;
+    }
+    autoFillWhitespace();
+    render();
+  }
+
+  buildChapterSwitch();
+  buildTabs();
+  EXERCISES.forEach(buildExercise);
+  var firstEx = exercisesOf(currentChapter)[0];
+  activate(firstEx.id);
+  updateProgressCount();
+  mainEl.querySelector('.exercise[data-id="' + firstEx.id + '"]').hidden = false;
+})();
+</script>
+</body>
+</html>
