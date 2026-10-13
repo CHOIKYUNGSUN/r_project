@@ -4,7 +4,8 @@
 왼쪽 콘솔의 코드를 보고 오른쪽 입력창에 똑같이 입력하면 복사 버튼이 켜지고, RStudio에 붙여넣어 실행한 뒤 예상 결과와 비교합니다.
 
 - 접속 주소: https://choikyungsun.github.io/r_project/
-- CBT 평가: https://choikyungsun.github.io/r_project/cbt.html
+- CBT 평가(실습실 기반): https://choikyungsun.github.io/r_project/cbt.html
+- CBT 평가(강의자료 기반): https://choikyungsun.github.io/r_project/cbt_lecture.html
 - 구성: 제1장 ~ 제4장 (`index.html` 한 파일)
 - 진행 상황은 각 학생 브라우저에 저장됩니다.
 
@@ -18,3 +19,9 @@
 - 범위 선택(전체/장별), 문항·보기 순서 섞기, 제한 시간, 답안표(OMR), 검토 표시
 - 제출 후 점수·장별 정답률, 문항별 정답·해설, 틀린 문항만 다시 풀기
 - 결과 인쇄(PDF 저장), 결과 CSV 내려받기
+
+## 강의자료 CBT (cbt_lecture.html)
+「R을 활용한 보건의료 데이터 분석과 AI」 강의자료 제1~4장 기반 쉬운 4지선다 200문항(장별 50문항)입니다.
+- 범위 선택(전체/제1~4장), 채점, 장별 정답률, 학습 분석(장별 수준·복습 추천 단원)
+- 문항별 정답·해설, 틀린 문항만 다시 풀기
+- PDF 결과지(오답 해설 / 전체 문항): 인쇄 창에서 'PDF로 저장' 선택
