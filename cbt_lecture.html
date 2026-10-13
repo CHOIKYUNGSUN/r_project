@@ -87,7 +87,15 @@
   .text-input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-soft); }
   .text-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .range-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .range-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .chip.wrongchip { border-color: #E08A1E; color: #B86A0C; background: #FFF4E5; }
+  .chip.wrongchip small { color: #B86A0C; }
+  .chip.wrongchip.on { background: #E08A1E; border-color: #E08A1E; color: #fff; }
+  .chip.wrongchip.on small { color: rgba(255,255,255,.9); }
+  .chip:disabled { opacity: .45; cursor: not-allowed; }
+  .wrongbank { margin-top: 16px; padding: 14px 16px; border-radius: 12px; border: 1.5px solid #E08A1E; background: #FFF4E5; color: #6B3E06; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 14px; }
+  .wrongbank b { color: #B86A0C; }
+  .wrongbank .sp { flex: 1; }
   .chip { border: 1px solid var(--border); background: var(--surface-soft); border-radius: 12px; padding: 10px 8px; cursor: pointer; text-align: center; font-weight: 700; font-size: 14px; }
   .chip small { display: block; font-weight: 500; color: var(--muted); font-size: 12px; }
   .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
@@ -335,6 +343,7 @@
           <li>키보드: <kbd>1</kbd>~<kbd>4</kbd> 답 선택, <kbd>←</kbd> <kbd>→</kbd> 이전·다음 문항</li>
           <li>제출하면 <b>점수·장별 정답률·복습할 단원</b>이 분석되고, <b>오답마다 정답과 해설</b>을 확인할 수 있습니다.</li>
           <li>결과는 <b>PDF 결과지</b>로 저장하거나 바로 인쇄할 수 있습니다.</li>
+          <li>틀린 문제는 <b>오답 노트</b>에 쌓입니다. 메뉴의 <b>틀린 문제 다시 풀기</b>로 언제든 다시 풀고, 맞히면 오답 노트에서 빠집니다.</li>
           <li>제한 시간이 끝나면 자동으로 제출됩니다. 풀던 내용은 이 브라우저에 임시 저장됩니다.</li>
         </ul>
         <ul class="chapter-list" id="chapterList"></ul>
@@ -402,6 +411,23 @@
   function save(obj) { try { localStorage.setItem(STORE, JSON.stringify(obj)); } catch (e) {} }
   function load() { try { return JSON.parse(localStorage.getItem(STORE) || "null"); } catch (e) { return null; } }
   function clearSave() { try { localStorage.removeItem(STORE); } catch (e) {} }
+  // 오답 노트: 지금까지 틀린 문항 id 목록 (다시 풀어 맞히면 빠짐)
+  var WRONG_STORE = STORE + "-wrongbank";
+  var memWrong = {};
+  function loadWrong() { try { return JSON.parse(localStorage.getItem(WRONG_STORE) || "{}") || {}; } catch (e) { return memWrong; } }
+  function saveWrong(b) { memWrong = b; try { localStorage.setItem(WRONG_STORE, JSON.stringify(b)); } catch (e) {} }
+  function clearWrong() { memWrong = {}; try { localStorage.removeItem(WRONG_STORE); } catch (e) {} }
+  function wrongPool() { var b = loadWrong(); return QUESTIONS.filter(function (q) { return b[q.id]; }); }
+  function updateWrongBank(rows) {
+    var b = loadWrong();
+    rows.forEach(function (r) { if (r.ok) delete b[r.Q.id]; else b[r.Q.id] = (b[r.Q.id] || 0) + 1; });
+    saveWrong(b);
+  }
+  function startWrongRetry() {
+    var pool = wrongPool();
+    if (!pool.length) { modal("틀린 문제가 없습니다", "아직 틀린 문제가 없습니다. 시험을 먼저 풀어 보세요.", [{ label: "확인", primary: true }]); return; }
+    startExam(pool, "틀린 문제 다시 풀기 (" + pool.length + "문항)", { shuffleQ: false, shuffleO: true, limitMin: 0 });
+  }
   function fmtTime(sec) { sec = Math.max(0, Math.floor(sec)); var h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60; return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(s).padStart(2, "0"); }
 
   // ---------- state ----------
@@ -416,8 +442,11 @@
     var ranges = [{ key: "all", label: "전체", n: QUESTIONS.length }].concat(CHAPTERS.map(function (c) {
       return { key: String(c.id), label: c.label, n: QUESTIONS.filter(function (q) { return q.c === c.id; }).length };
     }));
+    var wp = wrongPool();
+    if (range === "wrong" && !wp.length) range = "all";
+    ranges.push({ key: "wrong", label: "틀린 문제", n: wp.length, cls: " wrongchip", disabled: !wp.length });
     grid.innerHTML = ranges.map(function (r) {
-      return '<button type="button" class="chip' + (r.key === range ? " on" : "") + '" data-key="' + r.key + '">' + r.label + "<small>" + r.n + "문항</small></button>";
+      return '<button type="button" class="chip' + (r.cls || "") + (r.key === range ? " on" : "") + '" data-key="' + r.key + '"' + (r.disabled ? " disabled" : "") + ">" + r.label + "<small>" + r.n + "문항</small></button>";
     }).join("");
     grid.querySelectorAll(".chip").forEach(function (b) {
       b.addEventListener("click", function () { range = b.dataset.key; buildStart(); });
@@ -428,14 +457,21 @@
 
     var saved = load();
     var box = $("resumeBox");
+    var wbHtml = wp.length
+      ? '<div class="wrongbank"><span>지금까지 <b>틀린 문제 ' + wp.length + "문항</b>이 오답 노트에 있습니다. " +
+        CHAPTERS.map(function (c) { var n = wp.filter(function (q) { return q.c === c.id; }).length; return n ? c.label + " " + n : ""; }).filter(Boolean).join(" · ") +
+        '</span><span class="sp"></span><button class="btn small c-amber" id="wrongRetryStart">↻ 틀린 문제 다시 풀기</button></div>'
+      : "";
     if (saved && !saved.finished && saved.items && saved.items.length) {
       var answered = Object.keys(saved.answers || {}).length;
       box.innerHTML = '<div class="resume"><span>풀던 시험이 있습니다 — <b>' + esc(saved.label) + "</b>, " + answered + " / " + saved.items.length + ' 문항 응답</span><span style="flex:1"></span><button class="btn small primary" id="resumeBtn">이어서 풀기</button><button class="btn small" id="discardBtn">삭제</button></div>';
       $("resumeBtn").addEventListener("click", function () { exam = saved; showExam(); });
       $("discardBtn").addEventListener("click", function () { clearSave(); buildStart(); });
+      if (wbHtml) box.insertAdjacentHTML("beforeend", wbHtml);
     } else {
-      box.innerHTML = "";
+      box.innerHTML = wbHtml;
     }
+    if ($("wrongRetryStart")) $("wrongRetryStart").addEventListener("click", startWrongRetry);
     topBar();
   }
 
@@ -458,6 +494,7 @@
   }
 
   $("startBtn").addEventListener("click", function () {
+    if (range === "wrong") { startWrongRetry(); return; }
     var pool = range === "all" ? QUESTIONS : QUESTIONS.filter(function (q) { return String(q.c) === range; });
     var label = range === "all" ? "전체 (제1~4장)" : CHAPTERS[Number(range) - 1].label;
     startExam(pool, label);
@@ -610,7 +647,9 @@
   function topBar() {
     var el = $("topRight");
     var resetHtml = '<button type="button" class="btn small c-dark" data-reset="1" title="응시 기록과 답안을 모두 지우고 처음 화면으로">↺ 초기화</button>';
-    if (!exam || exam.finished || $("examView").hidden) { el.innerHTML = '<span class="pill">총 <b>' + QUESTIONS.length + "</b>문항 · 장별 50문항</span>" + resetHtml; return; }
+    var nW = wrongPool().length;
+    var wrongMenu = '<button type="button" class="btn small c-amber" data-wrongretry="1"' + (nW ? "" : " disabled") + ' title="오답 노트에 쌓인 틀린 문제를 다시 풉니다">↻ 틀린 문제 다시 풀기 (' + nW + ")</button>";
+    if (!exam || exam.finished || $("examView").hidden) { el.innerHTML = '<span class="pill">총 <b>' + QUESTIONS.length + "</b>문항 · 장별 50문항</span>" + wrongMenu + resetHtml; return; }
     var answered = Object.keys(exam.answers).length;
     var r = remaining();
     var timeHtml = r === null
@@ -635,6 +674,7 @@
     exam.finished = true;
     exam.end = Date.now();
     save(exam);
+    updateWrongBank(grade());
     showResult(timeout);
   }
 
@@ -799,6 +839,7 @@
   function doReset() {
     stopTimer();
     clearSave();
+    clearWrong();
     exam = null;
     range = "all";
     $("nameInput").value = ""; $("idInput").value = "";
@@ -807,12 +848,15 @@
     buildStart();
   }
   function confirmReset() {
-    modal("초기화할까요?", "지금까지의 답안과 결과가 모두 지워지고 처음 화면으로 돌아갑니다. 이 작업은 되돌릴 수 없습니다.", [
+    modal("초기화할까요?", "지금까지의 답안과 결과, 오답 노트(틀린 문제 목록)가 모두 지워지고 처음 화면으로 돌아갑니다. 이 작업은 되돌릴 수 없습니다.", [
       { label: "취소" },
       { label: "초기화", primary: true, fn: doReset }
     ]);
   }
-  $("topRight").addEventListener("click", function (e) { if (e.target.closest("[data-reset]")) confirmReset(); });
+  $("topRight").addEventListener("click", function (e) {
+    if (e.target.closest("[data-reset]")) confirmReset();
+    if (e.target.closest("[data-wrongretry]")) startWrongRetry();
+  });
 
   // ---------- modal ----------
   function modal(title, body, actions) {
