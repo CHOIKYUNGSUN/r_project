@@ -59,6 +59,17 @@
   .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
   .btn.primary:hover { filter: brightness(1.06); }
   .btn.danger { background: var(--bad); border-color: var(--bad); color: #fff; }
+  .btn.c-red    { background: #D64545; border-color: #D64545; color: #fff; }
+  .btn.c-amber  { background: #E08A1E; border-color: #E08A1E; color: #fff; }
+  .btn.c-blue   { background: #2F6FD6; border-color: #2F6FD6; color: #fff; }
+  .btn.c-purple { background: #7A4FC9; border-color: #7A4FC9; color: #fff; }
+  .btn.c-green  { background: #2E8B57; border-color: #2E8B57; color: #fff; }
+  .btn.c-dark   { background: #3B4A48; border-color: #3B4A48; color: #fff; }
+  .btn.c-red:hover, .btn.c-amber:hover, .btn.c-blue:hover, .btn.c-purple:hover, .btn.c-green:hover, .btn.c-dark:hover { filter: brightness(1.1); }
+  .btn.c-red.on { box-shadow: 0 0 0 3px color-mix(in srgb, #D64545 35%, transparent); }
+  .btn .ico { margin-right: 6px; }
+  .result-actions .btn { padding: 10px 16px; }
+  .print-scope { font-size: 13px; font-weight: 700; margin: 6px 0 0; }
   .btn.ghost { background: transparent; }
   .btn.small { padding: 6px 12px; font-size: 13px; }
   .btn:disabled { opacity: .45; cursor: not-allowed; }
@@ -598,13 +609,14 @@
 
   function topBar() {
     var el = $("topRight");
-    if (!exam || exam.finished || $("examView").hidden) { el.innerHTML = '<span class="pill">총 <b>' + QUESTIONS.length + "</b>문항 · 장별 50문항</span>"; return; }
+    var resetHtml = '<button type="button" class="btn small c-dark" data-reset="1" title="응시 기록과 답안을 모두 지우고 처음 화면으로">↺ 초기화</button>';
+    if (!exam || exam.finished || $("examView").hidden) { el.innerHTML = '<span class="pill">총 <b>' + QUESTIONS.length + "</b>문항 · 장별 50문항</span>" + resetHtml; return; }
     var answered = Object.keys(exam.answers).length;
     var r = remaining();
     var timeHtml = r === null
       ? '<span class="pill">경과 <b>' + fmtTime((Date.now() - exam.start) / 1000) + "</b></span>"
       : '<span class="pill timer' + (r < 300 ? " low" : "") + '">남은 시간 <b>' + fmtTime(r) + "</b></span>";
-    el.innerHTML = '<span class="pill">' + esc(exam.label) + " · 응답 <b>" + answered + "</b> / " + exam.items.length + "</span>" + timeHtml;
+    el.innerHTML = '<span class="pill">' + esc(exam.label) + " · 응답 <b>" + answered + "</b> / " + exam.items.length + "</span>" + timeHtml + resetHtml;
   }
 
   // ---------- grading / result ----------
@@ -668,16 +680,17 @@
           "</div>" +
         "</div>" +
       "</div>" +
+      '<div class="result-actions">' +
+        '<button class="btn c-red" id="viewWrongBtn"' + (wrong + blank ? "" : " disabled") + '><span class="ico">✕</span>틀린 문제만 보기 (' + (wrong + blank) + ")</button>" +
+        '<button class="btn c-amber" id="retryWrongBtn"' + (wrong + blank ? "" : " disabled") + '><span class="ico">↻</span>틀린 문제만 다시 풀기</button>' +
+        '<button class="btn c-blue" id="pdfWrongBtn"' + (wrong + blank ? "" : " disabled") + '><span class="ico">⎙</span>틀린 문제만 PDF 출력</button>' +
+        '<button class="btn c-purple" id="pdfAllBtn"><span class="ico">⎙</span>전체 결과 PDF 출력</button>' +
+        '<button class="btn c-green" id="csvBtn"><span class="ico">⬇</span>결과 CSV 저장</button>' +
+        '<button class="btn c-dark" id="resetBtn"><span class="ico">↺</span>초기화</button>' +
+      "</div>" +
       '<div class="card ch-table-card"><h3>장별 정답률</h3>' + chRows + "</div>" +
       analysisHtml(rows) +
-      '<div class="result-actions">' +
-        '<button class="btn primary" id="retryWrongBtn"' + (wrong + blank ? "" : " disabled") + ">틀린 문항만 다시 풀기 (" + (wrong + blank) + ")</button>" +
-        '<button class="btn" id="pdfWrongBtn">PDF 결과지 (오답 해설)</button>' +
-        '<button class="btn" id="pdfAllBtn">PDF 결과지 (전체 문항)</button>' +
-        '<button class="btn" id="csvBtn">결과 내려받기 (CSV)</button>' +
-        '<button class="btn ghost" id="homeBtn">처음 화면으로</button>' +
-      "</div>" +
-      '<div class="review-head"><h3>문항별 정답·해설</h3><div class="seg" id="seg">' +
+      '<div class="review-head" id="reviewHead"><h3 id="reviewTitle">문항별 정답·해설</h3><div class="seg" id="seg">' +
         '<button data-f="wrong">오답·미응답 (' + (wrong + blank) + ")</button>" +
         '<button data-f="all">전체 (' + total + ")</button>" +
         '<button data-f="right">정답 (' + right + ")</button>" +
@@ -694,7 +707,7 @@
       startExam(pool, "오답 다시 풀기 (" + pool.length + "문항)", { shuffleQ: false, shuffleO: true, limitMin: 0 });
     });
     function printPdf(filter) {
-      modal("PDF 결과지 저장", "인쇄 창이 열리면 '대상(프린터)'을 'PDF로 저장'으로 선택한 뒤 저장하세요. 종이로 출력하려면 프린터를 선택하면 됩니다.", [
+      modal(filter === "wrong" ? "틀린 문제만 PDF 출력" : "전체 결과 PDF 출력", "인쇄 창이 열리면 '대상(프린터)'을 'PDF로 저장'으로 선택한 뒤 저장하세요. 종이로 출력하려면 프린터를 선택하면 됩니다.", [
         { label: "취소" },
         { label: "인쇄 창 열기", primary: true, fn: function () {
           var prevFilter = reviewFilter, prevTitle = document.title;
@@ -709,7 +722,11 @@
     $("pdfWrongBtn").addEventListener("click", function () { printPdf("wrong"); });
     $("pdfAllBtn").addEventListener("click", function () { printPdf("all"); });
     $("csvBtn").addEventListener("click", function () { downloadCsv(rows, who, dateStr, score); });
-    $("homeBtn").addEventListener("click", function () { clearSave(); exam = null; show("startView"); buildStart(); });
+    $("viewWrongBtn").addEventListener("click", function () {
+      reviewFilter = "wrong"; renderReview(rows);
+      $("reviewHead").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    $("resetBtn").addEventListener("click", confirmReset);
   }
 
   function analysisHtml(rows) {
@@ -733,6 +750,10 @@
 
   function renderReview(rows) {
     $("seg").querySelectorAll("button").forEach(function (b) { b.classList.toggle("on", b.dataset.f === reviewFilter); });
+    if ($("viewWrongBtn")) $("viewWrongBtn").classList.toggle("on", reviewFilter === "wrong");
+    var titles = { wrong: "틀린 문제 해설 (오답·미응답)", all: "전체 문항 정답·해설", right: "맞힌 문제" };
+    var nWrong = rows.filter(function (r) { return !r.ok; }).length;
+    $("reviewTitle").innerHTML = titles[reviewFilter] + (reviewFilter === "wrong" ? ' <span class="print-only print-scope">출력 범위: 틀린 문제 ' + nWrong + "문항</span>" : "");
     var list = rows.filter(function (r) {
       if (reviewFilter === "wrong") return !r.ok;
       if (reviewFilter === "right") return r.ok;
@@ -773,6 +794,25 @@
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
   }
+
+  // ---------- reset ----------
+  function doReset() {
+    stopTimer();
+    clearSave();
+    exam = null;
+    range = "all";
+    $("nameInput").value = ""; $("idInput").value = "";
+    $("shuffleQ").checked = false; $("shuffleO").checked = false;
+    show("startView");
+    buildStart();
+  }
+  function confirmReset() {
+    modal("초기화할까요?", "지금까지의 답안과 결과가 모두 지워지고 처음 화면으로 돌아갑니다. 이 작업은 되돌릴 수 없습니다.", [
+      { label: "취소" },
+      { label: "초기화", primary: true, fn: doReset }
+    ]);
+  }
+  $("topRight").addEventListener("click", function (e) { if (e.target.closest("[data-reset]")) confirmReset(); });
 
   // ---------- modal ----------
   function modal(title, body, actions) {
