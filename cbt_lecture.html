@@ -344,7 +344,8 @@
           <li>제출하면 <b>점수·장별 정답률·복습할 단원</b>이 분석되고, <b>오답마다 정답과 해설</b>을 확인할 수 있습니다.</li>
           <li>결과는 <b>PDF 결과지</b>로 저장하거나 바로 인쇄할 수 있습니다.</li>
           <li>틀린 문제는 <b>오답 노트</b>에 쌓입니다. 메뉴의 <b>틀린 문제 다시 풀기</b>로 언제든 다시 풀고, 맞히면 오답 노트에서 빠집니다.</li>
-          <li>제한 시간이 끝나면 자동으로 제출됩니다. 풀던 내용은 이 브라우저에 임시 저장됩니다.</li>
+          <li><b>모든 문항에 답을 표기해야 제출·채점</b>됩니다. 빈 문항이 있으면 제출되지 않고 안 푼 문항으로 안내합니다.</li>
+          <li>제한 시간이 끝나면 남은 문항을 마저 표기한 뒤 제출하며, 결과에 '시간 초과'로 기록됩니다. 풀던 내용은 이 브라우저에 임시 저장됩니다.</li>
         </ul>
         <ul class="chapter-list" id="chapterList"></ul>
       </div>
@@ -596,6 +597,10 @@
       b.title = "문제 " + (i + 1) + (a ? " · 응답 " + MARKS[exam.answers[i]] : " · 미응답");
     });
     $("sheetCount").textContent = n + " / " + exam.items.length + " 응답";
+    var left = exam.items.length - n;
+    $("submitBtn").textContent = left ? "답안 제출 (남은 " + left + "문항)" : "답안 제출";
+    $("submitBtn").classList.toggle("primary", !left);
+    if ($("lastSubmit")) $("lastSubmit").textContent = left ? "답안 제출 (남은 " + left + "문항)" : "답안 제출";
     var cur = $("omr").querySelector(".omr-cell.cur");
     if (cur && cur.scrollIntoView) {
       var box = $("omr"), r = cur.getBoundingClientRect(), br = box.getBoundingClientRect();
@@ -614,13 +619,26 @@
   });
   $("submitBtn").addEventListener("click", confirmSubmit);
 
+  function blanks() {
+    var out = [];
+    for (var i = 0; i < exam.items.length; i++) if (exam.answers[i] == null) out.push(i);
+    return out;
+  }
+  function goFirstBlank() { var b = blanks(); if (b.length) go(b[0]); }
   function confirmSubmit() {
-    var blank = exam.items.length - Object.keys(exam.answers).length;
+    var b = blanks();
+    if (b.length) {
+      var list = b.slice(0, 15).map(function (i) { return i + 1; }).join(", ") + (b.length > 15 ? " 외 " + (b.length - 15) + "개" : "");
+      modal("모든 문항에 답을 표기해야 채점됩니다", "아직 답을 고르지 않은 문항이 " + b.length + "개 있습니다 (문제 " + list + "). 모든 문항에 답을 표기한 뒤 다시 제출하세요.", [
+        { label: "안 푼 문항으로 이동", primary: true, fn: goFirstBlank }
+      ]);
+      return;
+    }
     var flagged = Object.keys(exam.flags).length;
-    var msg = blank ? "아직 풀지 않은 문항이 " + blank + "개 있습니다. 미응답 문항은 오답으로 처리됩니다." : "모든 문항에 응답했습니다.";
+    var msg = "모든 문항에 답을 표기했습니다.";
     if (flagged) msg += " 검토 표시한 문항이 " + flagged + "개 있습니다.";
     msg += " 제출하면 답을 바꿀 수 없습니다.";
-    modal("답안을 제출할까요?", msg, [{ label: "계속 풀기" }, { label: "제출하기", primary: true, fn: finish }]);
+    modal("답안을 제출할까요?", msg, [{ label: "계속 풀기" }, { label: "제출하기", primary: true, fn: function () { finish(!!exam.overtime); } }]);
   }
 
   document.addEventListener("keydown", function (e) {
@@ -638,7 +656,14 @@
     timerHandle = setInterval(function () {
       if (!exam || exam.finished) return stopTimer();
       var r = remaining();
-      if (r !== null && r <= 0) { stopTimer(); finish(true); return; }
+      if (r !== null && r <= 0 && !exam.overtime) {
+        var b = blanks();
+        if (!b.length) { stopTimer(); finish(true); return; }
+        exam.overtime = true; save(exam);
+        modal("제한 시간이 끝났습니다", "아직 답을 고르지 않은 문항이 " + b.length + "개 있습니다. 모든 문항에 답을 표기해야 채점되므로, 남은 문항을 마저 표기한 뒤 제출하세요. (결과에 '시간 초과'로 기록됩니다)", [
+          { label: "안 푼 문항으로 이동", primary: true, fn: goFirstBlank }
+        ]);
+      }
       topBar();
     }, 1000);
   }
@@ -654,7 +679,9 @@
     var r = remaining();
     var timeHtml = r === null
       ? '<span class="pill">경과 <b>' + fmtTime((Date.now() - exam.start) / 1000) + "</b></span>"
-      : '<span class="pill timer' + (r < 300 ? " low" : "") + '">남은 시간 <b>' + fmtTime(r) + "</b></span>";
+      : r <= 0
+        ? '<span class="pill timer low">시간 초과 <b>+' + fmtTime(-r) + "</b></span>"
+        : '<span class="pill timer' + (r < 300 ? " low" : "") + '">남은 시간 <b>' + fmtTime(r) + "</b></span>";
     el.innerHTML = '<span class="pill">' + esc(exam.label) + " · 응답 <b>" + answered + "</b> / " + exam.items.length + "</span>" + timeHtml + resetHtml;
   }
 
@@ -711,7 +738,7 @@
         '<div class="score-head">' +
           '<span class="verdict ' + (pass ? "pass" : "fail") + '">' + (pass ? "통과" : "재학습 권장") + " (기준 " + PASS + "점)</span>" +
           "<h2>" + esc(exam.label) + " 결과" + (who ? " — " + esc(who) : "") + "</h2>" +
-          '<div class="score-sub">' + dateStr + " 제출 · 소요 시간 " + used + (timeout ? " · 제한 시간 종료로 자동 제출" : "") + "</div>" +
+          '<div class="score-sub">' + dateStr + " 제출 · 소요 시간 " + used + (exam.overtime ? " · 제한 시간 초과 후 제출" : timeout ? " · 제한 시간 종료로 자동 제출" : "") + "</div>" +
           '<div class="stats">' +
             '<div class="stat"><span>전체 문항</span><b>' + total + "</b></div>" +
             '<div class="stat good"><span>정답</span><b>' + right + "</b></div>" +
